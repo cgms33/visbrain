@@ -7,6 +7,7 @@ import io
 import numpy as np
 import datetime
 from warnings import warn
+from scipy.stats import iqr
 from mne.filter import resample
 import logging
 
@@ -179,11 +180,13 @@ class ReadSleepData(object):
 
         # ---------- SCALING ----------
         # Check amplitude of the data and if necessary apply re-scaling
-        # Assume that the max amplitude of EEG data is ~200 uV
-        amp = np.abs(np.ptp(data, 0).mean())
-        if amp < 10:
-            warn("Wrong data amplitude.")
-            data *= 10 ** np.floor(np.log10(200 / amp))
+        # Assume that the inter-quartle amplitude of EEG data is ~50 uV
+        iqr_data = iqr(data)
+        if iqr_data < 1:
+            mult_fact = np.floor(np.log10(50 / iqr_data))
+            warn("Wrong data amplitude. Multiplying data amplitude by 10^%i"
+                 % mult_fact)
+            data *= 10 ** mult_fact
         # ---------- CONVERSION ----------=
         # Convert data and hypno to be contiguous and float 32 (for vispy):
         self._data = vispy_array(data)
@@ -370,10 +373,18 @@ def mne_switch(file, ext, downsample, preload=True, **kwargs):
 
     # Downsample
     if downsample is not None:
-        raw.resample(downsample, npad='auto')
+        dsf = sf / downsample if downsample is not None else 1.
+        if float(dsf).is_integer():
+            # Decimate
+            data = raw._data[:, ::int(dsf)]
+        else:
+            # Use MNE built-in function
+            raw.resample(downsample, npad='auto')
+            data = raw._data
+    else:
+        data = raw._data
 
     channels = raw.info['ch_names']
-    data = raw._data
 
     # Conversion Volt (MNE) to microVolt (Visbrain):
     if raw._raw_extras[0] is not None and 'units' in raw._raw_extras[0]:
