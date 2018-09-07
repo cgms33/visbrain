@@ -109,12 +109,17 @@ class UiMenu(HelpMenu):
                                                    QtWidgets.QMessageBox.Yes,
                                                    QtWidgets.QMessageBox.No)
         if reply == QtWidgets.QMessageBox.No:  # v1 = sample
-            dialog_ext = "Text file (*.txt);;Elan file (*.hyp)"
+            msg = ("Please enter the epoch duration (1 = 1 value per second, "
+                   "30 = 1 value per 30 seconds.")
+            win, _ = QtWidgets.QInputDialog.getInt(self, 'Epoch duration', msg,
+                                                   1, 1, 120, 1)
+            dialog_ext = "Text file (*.txt)"
             version = 'sample'
         else:  # v2 = time
             dialog_ext = ("Text file (*.txt);;Csv file (*.csv);;Excel file "
                           "(*.xlsx)")
             version = 'time'
+            win = 1
         # Open dialog window :
         if filename is None:
             filename = dialog_save(self, 'Save File', hyp_file, dialog_ext +
@@ -124,7 +129,7 @@ class UiMenu(HelpMenu):
             if isinstance(self._file, str):
                 info['Datafile'] = self._file
             write_hypno(filename, self._hypno, version=version, sf=self._sfori,
-                        npts=self._N, time=self._time, info=info)
+                        npts=self._N, time=self._time, window=win, info=info)
 
     def _save_hyp_fig(self, *args, filename=None, **kwargs):
         """Save a 600 dpi .png figure of the hypnogram."""
@@ -320,7 +325,7 @@ class UiMenu(HelpMenu):
         if filename:
             # Load the hypnogram :
             self._hypno, _ = read_hypno(filename, time=self._time)
-            self._hypno = oversample_hypno(self._hypno, self._N)[::self._dsf]
+            self._hypno = oversample_hypno(self._hypno, self._N_ds)
             self._hyp.set_data(self._sf, self._hypno, self._time)
             # Update info table :
             self._fcn_info_update()

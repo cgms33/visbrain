@@ -5,7 +5,7 @@ import numpy as np
 from vispy.util import profiler
 
 
-__all__ = ('Profiler', 'get_dsf', 'set_if_not_none')
+__all__ = ('Profiler', 'set_if_not_none')
 
 
 class Profiler(object):
@@ -52,25 +52,6 @@ class Profiler(object):
     def _new_msg(msg):
         msg += ' ' if msg[-1] != ' ' else ''
         return msg
-
-
-def get_dsf(downsample, sf):
-    """Get the downsampling factor.
-
-    Parameters
-    ----------
-    downsample : float
-        The down-sampling frequency.
-    sf : float
-        The sampling frequency
-    """
-    if all([isinstance(k, (int, float)) for k in (downsample, sf)]):
-        dsf = int(np.round(sf / downsample))
-        downsample = float(sf / dsf)
-        return dsf, downsample
-    else:
-        return 1, downsample
-
 
 def set_if_not_none(to_set, value, cond=True):
     """Set a variable if the value is not None.

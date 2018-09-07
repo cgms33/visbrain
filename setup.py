@@ -55,6 +55,8 @@ setup(
         "scipy",
         "vispy>=0.5.2",
         "matplotlib>=1.5.5",
+        "mne>=0.16",
+        "pandas>=0.22",
         "pyqt5",
         "pillow",
         "Click"

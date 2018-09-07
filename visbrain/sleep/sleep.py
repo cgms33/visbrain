@@ -55,11 +55,6 @@ class Sleep(PyQtModule, ReadSleepData, UiInit, Visuals, UiElements,
     href : list | ['art', 'wake', 'rem', 'n1', 'n2', 'n3']
         List of sleep stages. This list can be used to changed the display
         order into the GUI.
-    preload : bool | True
-        Preload data into memory. For large datasets, turn this parameter to
-        True.
-    use_mne : bool | False
-        Force to load the file using mne.io functions.
     kwargs_mne : dict | {}
         Dictionary to pass to the mne.io loading function.
 
@@ -81,7 +76,7 @@ class Sleep(PyQtModule, ReadSleepData, UiInit, Visuals, UiElements,
     def __init__(self, data=None, hypno=None, config_file=None,
                  annotations=None, channels=None, sf=None, downsample=100.,
                  axis=True, href=['art', 'wake', 'rem', 'n1', 'n2', 'n3'],
-                 preload=True, use_mne=False, kwargs_mne={}, verbose=None):
+                 kwargs_mne={}, verbose=None):
         """Init."""
         PyQtModule.__init__(self, verbose=verbose, icon='sleep_icon.svg')
         # ====================== APP CREATION ======================
@@ -95,8 +90,8 @@ class Sleep(PyQtModule, ReadSleepData, UiInit, Visuals, UiElements,
 
         # ====================== LOAD FILE ======================
         PROFILER("Import file", as_type='title')
-        ReadSleepData.__init__(self, data, channels, sf, hypno, href, preload,
-                               use_mne, downsample, kwargs_mne,
+        ReadSleepData.__init__(self, data, channels, sf, hypno, href,
+                               downsample, kwargs_mne,
                                annotations)
 
         # ====================== VARIABLES ======================

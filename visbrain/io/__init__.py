@@ -2,7 +2,6 @@
 from .dependencies import *  # noqa
 from .dialog import *  # noqa
 from .download import *  # noqa
-from .mneio import *  # noqa
 from .path import *  # noqa
 from .read_annotations import *  # noqa
 from .read_data import *  # noqa

@@ -20,6 +20,7 @@ Read hypnogram data
 import os
 import logging
 import numpy as np
+import pandas as pd
 
 from ..utils import vispy_array, transient
 from ..io import is_pandas_installed, is_xlrd_installed
@@ -144,7 +145,7 @@ def oversample_hypno(hypno, n):
 ###############################################################################
 ###############################################################################
 
-def write_hypno(filename, hypno, version='time', sf=100., npts=1, window=1.,
+def write_hypno(filename, hypno, version='sample', sf=100., npts=1, window=1.,
                 time=None, info=None):
     """Save hypnogram data.
 
@@ -154,6 +155,8 @@ def write_hypno(filename, hypno, version='time', sf=100., npts=1, window=1.,
         Filename (with full path) of the file to save
     hypno : array_like
         Hypnogram array, same length as data
+    version : str
+        Hypnogram file type
     sf : float | 100.
         Original sampling rate of the raw data
     npts : int | 1
@@ -175,7 +178,7 @@ def write_hypno(filename, hypno, version='time', sf=100., npts=1, window=1.,
     _, ext = os.path.splitext(filename)
     # Switch between time and sample version :
     if version is 'sample':  # v1 = sample
-        # Take a down-sample version of the hypno :
+        # Downsample to one value per second :
         step = int(len(hypno) / np.round(npts / sf))
         hypno = hypno[::step].astype(int)
         # Export :
@@ -215,7 +218,7 @@ def _write_hypno_txt_sample(filename, hypno, window=1.):
     filename : str
         Filename (with full path) of the file to save
     hypno : array_like
-        Hypnogram array, same length as data
+        Hypnogram array, one value per second.
     window : float | 1
         Time window (second) of each point in the hypno
         Default is one value per second
@@ -223,16 +226,25 @@ def _write_hypno_txt_sample(filename, hypno, window=1.):
     """
     base = os.path.basename(filename)
     dirname = os.path.dirname(filename)
-    descript = os.path.join(dirname, os.path.splitext(
-        base)[0] + '_description.txt')
-
-    # Save hypno
-    np.savetxt(filename, hypno, fmt='%s')
+    descript = os.path.join(dirname,
+                            os.path.splitext(base)[0] + '_description.txt')
 
     # Save header file
     hdr = np.array([['time ' + str(window)], ['W 0'], ['N1 1'], ['N2 2'],
                     ['N3 3'], ['REM 4'], ['Art -1']]).flatten()
-    np.savetxt(descript, hdr, fmt='%s')
+
+    # np.savetxt(descript, hdr, fmt='%s')
+
+    # Save hypno
+    if window > 1:
+        rng = pd.date_range(start='1/1/1991', periods=hypno.size, freq='1s')
+        ts = pd.Series(hypno, index=rng)
+        ts = ts.resample(str(window) + 's').apply(lambda x:
+                                                  x.value_counts().index[0])
+        hypno = ts.values
+
+    np.savetxt(filename, hypno, fmt='%s', delimiter='\n', newline='\n',
+               header=pd.Series(hdr).to_string(index=False))
 
 
 def _write_hypno_hyp_sample(filename, hypno, sf=100., npts=1):
@@ -249,6 +261,7 @@ def _write_hypno_hyp_sample(filename, hypno, sf=100., npts=1):
     npts : int | 1
         Original number of points in the raw data
     """
+    # REM is 5 in Elan .hyp format
     hypno[hypno == 4] = 5
 
     hdr = np.array([['time_base 1.000000'],
@@ -258,7 +271,7 @@ def _write_hypno_hyp_sample(filename, hypno, sf=100., npts=1):
 
     # Save
     export = np.append(hdr, hypno.astype(str))
-    np.savetxt(filename, export, fmt='%s')
+    np.savetxt(filename, export, fmt='%s', delimiter='\n', newline='\n')
 
 
 ###############################################################################

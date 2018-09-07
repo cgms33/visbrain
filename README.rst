@@ -44,6 +44,8 @@ Visbrain requires :
 * SciPy
 * VisPy >= 0.5.0
 * Matplotlib >= 1.5.5
+* MNE >= 0.16
+* Pandas >= 0.22
 * PyQt5
 * Pillow
 

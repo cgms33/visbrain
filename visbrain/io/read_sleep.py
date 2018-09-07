@@ -1,37 +1,32 @@
 """Load sleep files.
 
-This file contain functions to load :
-- European Data Format (*.edf)
-- Micromed (*.trc)
-- BrainVision (*.vhdr)
-- ELAN (*.eeg)
-- Hypnogram (*.hyp)
+This file contain functions to load PSG and hypnogram files.
 """
 import os
 import io
 import numpy as np
 import datetime
 from warnings import warn
+from mne.filter import resample
 import logging
 
 from .rw_utils import get_file_ext
 from .rw_hypno import (read_hypno, oversample_hypno)
 from .dialog import dialog_load
-from .mneio import mne_switch
 from .dependencies import is_mne_installed
-from ..utils import get_dsf, vispy_array
+from ..utils import vispy_array
 from ..io import merge_annotations
 from ..config import PROFILER
 
 logger = logging.getLogger('visbrain')
 
-__all__ = ['ReadSleepData']
+__all__ = ['ReadSleepData', 'read_elan', 'mne_switch']
 
 
 class ReadSleepData(object):
     """Main class for reading sleep data."""
 
-    def __init__(self, data, channels, sf, hypno, href, preload, use_mne,
+    def __init__(self, data, channels, sf, hypno, href,
                  downsample, kwargs_mne, annotations):
         """Init."""
         # ========================== LOAD DATA ==========================
@@ -41,7 +36,7 @@ class ReadSleepData(object):
                                "BrainVision (*.vhdr);;EDF (*.edf);;"
                                "GDF (*.gdf);;BDF (*.bdf);;Elan (*.eeg);;"
                                "EGI (*.egi);;MFF (*.mff);;CNT (*.cnt);;"
-                               "Micromed (*.trc);;EEGLab (*.set);;REC (*.rec)")
+                               "EEGLab (*.set);;REC (*.rec);;Eximia (*.nxe)")
             upath = os.path.split(data)[0]
         else:
             upath = ''
@@ -50,25 +45,22 @@ class ReadSleepData(object):
             # ---------- USE SLEEP or MNE ----------
             # Find file extension :
             file, ext = get_file_ext(data)
-            # Force to use MNE if preload is False :
-            use_mne = True if not preload else use_mne
             # Get if the file has to be loaded using Sleep or MNE python :
-            sleep_ext = ['.eeg', '.vhdr', '.edf', '.trc', '.rec']
-            use_mne = True if ext not in sleep_ext else use_mne
+            use_mne = True if ext != '.eeg' else False
 
             if use_mne:
                 is_mne_installed(raise_error=True)
 
             # ---------- LOAD THE FILE ----------
             if use_mne:  # Load using MNE functions
-                logger.debug("Load file using MNE-python")
-                kwargs_mne['preload'] = preload
+                logger.debug("Loading file using MNE-python")
+                kwargs_mne['preload'] = True
                 args = mne_switch(file, ext, downsample, **kwargs_mne)
             else:  # Load using Sleep functions
-                logger.debug("Load file using Sleep")
-                args = sleep_switch(file, ext, downsample)
+                logger.debug("Loading file using Sleep")
+                args = read_elan(file + ext, downsample)
             # Get output arguments :
-            (sf, downsample, dsf, data, channels, n, offset, annot) = args
+            (sf, downsample, data, channels, n, offset, annot) = args
             info = ("Data successfully loaded (%s):"
                     "\n- Sampling-frequency : %.2fHz"
                     "\n- Number of time points (before down-sampling): %i"
@@ -88,9 +80,9 @@ class ReadSleepData(object):
                                  "integer or a float.")
             file = annot = None
             offset = datetime.time(0, 0, 0)
-            dsf, downsample = get_dsf(downsample, sf)
             n = data.shape[1]
-            data = data[:, ::dsf]
+            dsf = downsample / sf if downsample is not None else 1
+            data = resample(data, dsf)
         else:
             raise IOError("The data should either be a string which refer to "
                           "the path of a file or an array of raw data of shape"
@@ -100,12 +92,12 @@ class ReadSleepData(object):
         self._file = file
         self._annot_file = np.c_[merge_annotations(annotations, annot)]
         self._N = n
-        self._dsf = dsf
+        self._N_ds = data.shape[1]
         self._sfori = float(sf)
         self._toffset = offset.hour * 3600. + offset.minute * 60. + \
             offset.second
-        time = np.arange(n)[::dsf] / sf
         self._sf = float(downsample) if downsample is not None else float(sf)
+        time = np.arange(self._N_ds) / self._sf
 
         # ========================== LOAD HYPNOGRAM ==========================
         # Dialog window for hypnogram :
@@ -115,16 +107,10 @@ class ReadSleepData(object):
                                 "CSV file (*.csv);;EDF+ file(*.edf);"
                                 ";All files (*.*)")
             hypno = None if hypno == '' else hypno
-        if isinstance(hypno, np.ndarray):  # array_like
-            if len(hypno) == n:
-                hypno = hypno[::dsf]
-            else:
-                raise ValueError("Then length of the hypnogram must be the "
-                                 "same as raw data")
         if isinstance(hypno, str):  # (*.hyp / *.txt / *.csv)
             hypno, _ = read_hypno(hypno, time=time, datafile=file)
-            # Oversample then downsample :
-            hypno = oversample_hypno(hypno, self._N)[::dsf]
+            # Oversample hypno
+            hypno = oversample_hypno(hypno, self._N_ds)
             PROFILER("Hypnogram file loaded", level=1)
 
         # ========================== CHECKING ==========================
@@ -193,10 +179,11 @@ class ReadSleepData(object):
 
         # ---------- SCALING ----------
         # Check amplitude of the data and if necessary apply re-scaling
-        if np.abs(np.ptp(data, 0).mean()) < 0.1:
-            warn("Wrong data amplitude for Sleep software.")
-            data *= 1e6
-
+        # Assume that the max amplitude of EEG data is ~200 uV
+        amp = np.abs(np.ptp(data, 0).mean())
+        if amp < 10:
+            warn("Wrong data amplitude.")
+            data *= 10 ** np.floor(np.log10(200 / amp))
         # ---------- CONVERSION ----------=
         # Convert data and hypno to be contiguous and float 32 (for vispy):
         self._data = vispy_array(data)
@@ -207,353 +194,11 @@ class ReadSleepData(object):
         self._hconv = conv
         PROFILER("Check data", level=1)
 
-
-def sleep_switch(file, ext, downsample):
-    """Switch between sleep data files.
-
-    Parameters
-    ----------
-    file : string
-        Path to the file to load.
-    ext : string
-        Extension name (e.g. '.eeg')
-    downsample : int
-        Down-sampling frequency.
-
-    Returns
-    -------
-    sf : float
-        The original sampling-frequency.
-    downsample : float
-        The down-sampling frequency used.
-    dsf : int
-        The down-sampling factor.
-    data : array_like
-        The raw data of shape (n_channels, n_points)
-    channels : list
-        List of channel names.
-    n : int
-        Number of time points before down-sampling.
-    start_time : datetime.time
-        The time offset.
-    annotations : array_like
-        Array of annotations.
-    """
-    # Get full path :
-    path = file + ext
-
-    if ext == '.vhdr':  # BrainVision
-        return read_bva(path, downsample)
-
-    if ext == '.eeg':  # Elan
-        return read_elan(path, downsample)
-
-    elif ext in ['.edf', '.rec']:  # European Data Format
-        return read_edf(path, downsample)
-
-    elif ext == '.trc':  # Micromed
-        return read_trc(path, downsample)
-
-    else:  # None
-        raise ValueError("*" + ext + " files are currently not supported.")
-
-
 ###############################################################################
 ###############################################################################
 #                               LOAD FILES
 ###############################################################################
 ###############################################################################
-
-def read_edf(path, downsample):
-    """Read data from a European Data Format (edf) file.
-
-    Use phypno class for reading EDF files:
-        http: // phypno.readthedocs.io / api / phypno.ioeeg.edf.html
-
-    Parameters
-    ----------
-    path: str
-        Filename(with full path) to EDF file
-    downsample : int
-        Down-sampling frequency.
-
-    Returns
-    -------
-    sf : int
-        The sampling frequency.
-    data : array_like
-        The data organised as well(n_channels, n_points)
-    chan : list
-        The list of channel's names.
-    n : int
-        Number of points in the original data
-    start_time : array_like
-        Starting time of the recording (hh:mm:ss)
-    annotations : array_like
-        Array of annotations.
-    """
-    assert os.path.isfile(path)
-
-    from ..utils.sleep.edf import Edf
-
-    edf = Edf(path)
-
-    # Return header informations
-    _, start_time, sf, chan, n_samples, _ = edf.return_hdr()
-    start_time = start_time.time()
-
-    # Keep only data channels (e.g excludes marker chan)
-    freqs = np.unique(edf.hdr['n_samples_per_record']) / edf.hdr[
-        'record_length']
-    sf = freqs.max()
-
-    if len(freqs) != 1:
-        bad_chans = np.where(edf.hdr['n_samples_per_record'] < sf)
-        chan = np.delete(chan, bad_chans)
-
-    # Load all samples of selected channels
-    np.seterr(divide='ignore', invalid='ignore')
-    data = edf.return_dat(chan, 0, n_samples)
-
-    # Get original signal length :
-    n = data.shape[1]
-
-    # Get down-sample factor :
-    sf = float(sf)
-    chan = list(chan)
-    dsf, downsample = get_dsf(downsample, sf)
-
-    return sf, downsample, dsf, data[:, ::dsf], chan, n, start_time, None
-
-
-def read_trc(path, downsample):
-    """Read data from a Micromed (trc) file (version 4).
-
-    Poor man's version of micromedio.py from Neo package
-    (https://pythonhosted.org/neo/)
-
-    Parameters
-    ----------
-    path : str
-        Filename(with full path) to .trc file
-    downsample : int
-        Down-sampling frequency.
-
-    Returns
-    -------
-    sf : float
-        The sampling frequency.
-    downsample : float
-        The downsampling frequency
-    data : array_like
-        The data organised as well(n_channels, n_points)
-    chan : list
-        The list of channel's names.
-    n : int
-        Number of samples before down-sampling.
-    start_time : array_like
-        Starting time of the recording (hh:mm:ss)
-    annotations : array_like
-        Array of annotations.
-    """
-    import struct
-
-    def read_f(f, fmt):
-        return struct.unpack(fmt, f.read(struct.calcsize(fmt)))
-
-    with io.open(path, 'rb') as f:
-        # Read header
-        f.seek(175, 0)
-        header_version, = read_f(f, 'b')
-        assert header_version == 4
-
-        f.seek(138, 0)
-        data_start_offset, n_chan, _, sf, nbytes = read_f(f, 'IHHHH')
-
-        f.seek(128, 0)
-        day, month, year, hour, minute, sec = read_f(f, 'bbbbbb')
-        start_time = datetime.time(hour, minute, sec)
-
-        # Raw data
-        f.seek(data_start_offset, 0)
-        m_raw = np.fromstring(f.read(), dtype='u' + str(nbytes))
-        m_raw = m_raw.reshape((int(m_raw.size / n_chan), n_chan)).transpose()
-
-        # Read label / gain
-        gain = []
-        chan = []
-        logical_ground = []
-        data = np.empty(shape=m_raw.shape, dtype=np.float32)
-
-        f.seek(176, 0)
-        zone_names = ['ORDER', 'LABCOD']
-        zones = {}
-        for zname in zone_names:
-            zname2, pos, length = read_f(f, '8sII')
-            zones[zname] = zname2, pos, length
-
-        zname2, pos, length = zones['ORDER']
-        f.seek(pos, 0)
-        code = np.fromfile(f, dtype='u2', count=n_chan)
-
-        for c in range(n_chan):
-            zname2, pos, length = zones['LABCOD']
-            f.seek(pos + code[c] * 128 + 2, 0)
-
-            chan = np.append(chan, f.read(6).decode('utf-8').strip())
-            logical_min, logical_max, logic_ground_chan, physical_min, \
-                physical_max = read_f(f, 'iiiii')
-
-            logical_ground = np.append(logical_ground, logic_ground_chan)
-
-            gain = np.append(gain, float(physical_max - physical_min) /
-                             float(logical_max - logical_min + 1))
-
-    # Multiply by gain
-    m_raw = m_raw - logical_ground[:, np.newaxis]
-    data = m_raw * gain[:, np.newaxis].astype(np.float32)
-
-    # Get original signal length :
-    n = data.shape[1]
-
-    # Get down-sample factor :
-    sf = float(sf)
-    chan = list(chan)
-    dsf, downsample = get_dsf(downsample, sf)
-
-    return sf, downsample, dsf, data[:, ::dsf], chan, n, start_time, None
-
-
-def read_bva(path, downsample, read_markers=False):
-    """Read data from a BrainVision (*.vhdr) file.
-
-    Poor man's version of https: // gist.github.com / breuderink / 6266871
-
-    Assumes that data are saved with the following parameters:
-        - Data format: Binary
-        - Orientation: Multiplexed
-        - Format: int16
-
-    Parameters
-    ----------
-    path : str
-        Filename(with full path) to .vhdr file. Data file must be in the
-        same directory.
-    downsample : int
-        Down-sampling frequency.
-    read_markers : bool | False
-        Import markers from the .vmrk files as annotations
-
-    Returns
-    -------
-    sf : float
-        The sampling frequency.
-    data : array_like
-        The data organised as well(n_channels, n_points)
-    chan : list
-        The list of channel's names.
-    n : int
-        Number of points before down-sampling.
-    start_time : array_like
-        Starting time of the recording (hh:mm:ss)
-    annotations : array_like
-        Array of annotations.
-    """
-    import re
-
-    assert os.path.isfile(path)
-
-    # Read header
-    ent = np.genfromtxt(path, delimiter='\n', usecols=[0],
-                        dtype=None, skip_header=0, encoding='utf-8')
-
-    for item in ent:
-        if 'DataFile=' in item:
-            data_file = item.split('=')[1]
-            data_path = os.path.join(os.path.dirname(path), data_file)
-            assert os.path.isfile(data_path)
-        elif 'MarkerFile=' in item:
-            marker_file = item.split('=')[1]
-            marker_path = os.path.join(os.path.dirname(path), marker_file)
-        elif 'NumberOfChannels=' in item:
-            n_chan = int(re.findall('\d+', item)[0])
-        elif 'SamplingInterval=' in item:
-            si = float(re.findall("[-+]?\d*\.\d+|\d+", item)[0])
-            sf = 1 / (si * 0.000001)
-        elif 'DataFormat' in item:
-            data_format = item.split('=')[1]
-        elif 'BinaryFormat' in item:
-            binary_format = item.split('=')[1]
-        elif 'DataOrientation' in item:
-            data_orient = item.split('=')[1]
-
-    # Check binary format
-    assert "BINARY" in data_format
-    assert "INT_16" in binary_format
-    assert "MULTIPLEXED" in data_orient
-
-    # Extract channel labels and resolution
-    start_label = np.array(np.where(np.char.find(ent, 'Ch1=') == 0)).min()
-    chan = {}
-    resolution = np.empty(shape=n_chan)
-
-    for i, j in enumerate(range(start_label, start_label + n_chan)):
-        chan[i] = re.split('\W+', ent[j])[1]
-        resolution[i] = float(ent[j].split(",")[2])
-
-    chan = np.array(list(chan.values())).flatten()
-
-    # Read marker file (if present) to extract recording time
-    if os.path.isfile(marker_path):
-        vmrk = np.genfromtxt(marker_path, delimiter='\n', usecols=[0],
-                             dtype=None, skip_header=0, encoding='utf-8')
-
-        # Read start-time
-        for item in vmrk:
-            if 'New Segment' in item:
-                st = re.split('\W+', item)[-1]
-                start_time = datetime.time(int(st[8:10]), int(st[10:12]),
-                                           int(st[12:14]))
-                break
-            else:
-                start_time = datetime.time(0, 0, 0)
-
-        # Read markers
-        if read_markers:
-            onsets = np.array([], dtype=float)
-            durations = np.array([], dtype=float)
-            descriptions = np.array([], dtype=str)
-            for item in vmrk:
-                if 'Mk' in item and ';' not in item:
-                    onsets = np.append(onsets, int(
-                        re.sub(r'\s', '', item).split(',')[2]))
-                    durations = np.append(durations, int(
-                        re.sub(r'\s', '', item).split(',')[3]))
-                    descriptions = np.append(descriptions, re.sub(
-                        r'\s', '', item).split(',')[1])
-                    anot = np.c_[onsets, durations, descriptions]
-        else:
-            anot = None
-
-    with io.open(data_path, 'rb') as f:
-        raw = f.read()
-        size = int(len(raw) / 2)
-
-        ints = np.ndarray((n_chan, int(size / n_chan)),
-                          dtype='<i2', order='F', buffer=raw)
-
-        data = np.float32(np.diag(resolution)).dot(ints)
-
-    # Get original signal length :
-    n = data.shape[1]
-
-    # Get down-sample factor :
-    sf = float(sf)
-    chan = list(chan)
-    dsf, downsample = get_dsf(downsample, sf)
-
-    return sf, downsample, dsf, data[:, ::dsf], chan, n, start_time, anot
-
 
 def read_elan(path, downsample):
     """Read data from a ELAN (eeg) file.
@@ -570,9 +215,11 @@ def read_elan(path, downsample):
     Returns
     -------
     sf : int
-        The sampling frequency.
+        The original sampling frequency.
+    downsample :
+        The downsampling frequency
     data : array_like
-        The data organised as well(n_channels, n_points)
+        The downsampled data organised as (n_channels, n_points)
     chan : list
         The list of channel's names.
     n : int
@@ -648,14 +295,92 @@ def read_elan(path, downsample):
 
     # Get original signal length :
     n = m_raw.shape[1]
-
-    # Get down-sample factor :
-    sf = float(sf)
     chan = list(chan)
-    dsf, downsample = get_dsf(downsample, sf)
 
-    # Multiply by gain :
-    data = m_raw[chan_list, ::dsf] * \
-        gain[chan_list][..., np.newaxis]
+    # Downsampling
+    dsf = sf / downsample if downsample is not None else 1.
+    if float(dsf).is_integer():
+        # Decimate and multiply by gain :
+        data = m_raw[chan_list, ::int(dsf)] * gain[chan_list][..., np.newaxis]
+    else:
+        # Load in full and then downsample (slow for large files)
+        data = m_raw[chan_list, :] * gain[chan_list][..., np.newaxis]
+        data = resample(data, 1 / dsf)
 
-    return sf, downsample, dsf, data, chan, n, start_time, None
+    return sf, downsample, data, chan, n, start_time, None
+
+
+def mne_switch(file, ext, downsample, preload=True, **kwargs):
+    """Read sleep datasets using mne.io.
+
+    Parameters
+    ----------
+    file : string
+        Filename (without extension).
+    ext : string
+        File extension (e.g. '.edf'').
+    preload : bool | True
+        Preload data in memory.
+    kwargs : dict | {}
+        Further arguments to pass to the mne.io.read function.
+
+    Returns
+    -------
+    sf : float
+        The original sampling-frequency.
+    downsample : float
+        The down-sampling frequency used.
+    data : array_like
+        The downsampled data of shape (n_channels, n_points)
+    channels : list
+        List of channel names.
+    n : int
+        Number of time points before down-sampling.
+    start_time : datetime.time
+        The time offset.
+    """
+    from mne import io
+
+    # Get full path :
+    path = file + ext
+
+    # Preload :
+    if preload is False:
+        preload = 'temp.dat'
+    kwargs['preload'] = preload
+
+    if ext.lower() in ['.edf', '.bdf', '.gdf']:  # EDF / BDF / GDF
+        raw = io.read_raw_edf(path, **kwargs)
+    elif ext.lower == '.set':   # EEGLAB
+        raw = io.read_raw_eeglab(path, **kwargs)
+    elif ext.lower() in ['.egi', '.mff']:  # EGI / MFF
+        raw = io.read_raw_egi(path, **kwargs)
+    elif ext.lower() == '.cnt':  # CNT
+        raw = io.read_raw_cnt(path, **kwargs)
+    elif ext.lower() == '.vhdr':  # BrainVision
+        raw = io.read_raw_brainvision(path, **kwargs)
+    elif ext.lower() == '.nxe': # Eximia
+        raw = io.read_raw_eximia(path, **kwargs)
+    else:
+        raise IOError("File not supported by mne-python.")
+
+    raw.pick_types(meg=True, eeg=True, ecg=True, emg=True)  # Remove stim lines
+    sf = raw.info['sfreq']
+    n = raw._data.shape[1]
+
+    # Downsample
+    if downsample is not None:
+        raw.resample(downsample, npad='auto')
+
+    channels = raw.info['ch_names']
+    data = raw._data
+
+    # Conversion Volt (MNE) to microVolt (Visbrain):
+    if raw._raw_extras[0] is not None and 'units' in raw._raw_extras[0]:
+        units = raw._raw_extras[0]['units'][0:data.shape[0]]
+        data /= np.array(units).reshape(-1, 1)
+
+    start_time = datetime.time(0, 0, 0)  # raw.info['meas_date']
+    anot = raw.annotations
+
+    return sf, downsample, data, channels, n, start_time, anot
