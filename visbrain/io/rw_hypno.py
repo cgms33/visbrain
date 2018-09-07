@@ -233,7 +233,7 @@ def _write_hypno_txt_sample(filename, hypno, window=1.):
     hdr = np.array([['time ' + str(window)], ['W 0'], ['N1 1'], ['N2 2'],
                     ['N3 3'], ['REM 4'], ['Art -1']]).flatten()
 
-    # np.savetxt(descript, hdr, fmt='%s')
+    np.savetxt(descript, hdr, fmt='%s')
 
     # Save hypno
     if window > 1:
