@@ -180,7 +180,7 @@ class ReadSleepData(object):
 
         # ---------- SCALING ----------
         # Check amplitude of the data and if necessary apply re-scaling
-        # Assume that the inter-quartle amplitude of EEG data is ~50 uV
+        # Assume that the inter-quartile amplitude of EEG data is ~50 uV
         iqr_data = iqr(data)
         if iqr_data < 1:
             mult_fact = np.floor(np.log10(50 / iqr_data))

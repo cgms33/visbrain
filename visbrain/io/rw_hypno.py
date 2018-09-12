@@ -183,7 +183,7 @@ def write_hypno(filename, hypno, version='sample', sf=100., npts=1, window=1.,
         hypno = hypno[::step].astype(int)
         # Export :
         if ext == '.txt':
-            _write_hypno_txt_sample(filename, hypno, window=window)
+            _write_hypno_txt_sample(filename, hypno, window=window, info=info)
         elif ext == '.hyp':
             _write_hypno_hyp_sample(filename, hypno, sf=sf, npts=npts)
     elif version is 'time':  # v2 = time
@@ -208,7 +208,7 @@ def write_hypno(filename, hypno, version='sample', sf=100., npts=1, window=1.,
     logger.info("Hypnogram saved (%s)" % filename)
 
 
-def _write_hypno_txt_sample(filename, hypno, window=1.):
+def _write_hypno_txt_sample(filename, hypno, window=1., info=None):
     """Save hypnogram in txt file format (txt).
 
     Header is in file filename_description.txt
@@ -223,6 +223,8 @@ def _write_hypno_txt_sample(filename, hypno, window=1.):
         Time window (second) of each point in the hypno
         Default is one value per second
         (e.g. window = 30 = 1 value per 30 second)
+    info : dict | None
+        Additional informations to add to the file (scorer name, date, etc).
     """
     base = os.path.basename(filename)
     dirname = os.path.dirname(filename)
@@ -235,7 +237,7 @@ def _write_hypno_txt_sample(filename, hypno, window=1.):
 
     np.savetxt(descript, hdr, fmt='%s')
 
-    # Save hypno
+    # Resample hypnogram to desired window
     if window > 1:
         rng = pd.date_range(start='1/1/1991', periods=hypno.size, freq='1s')
         ts = pd.Series(hypno, index=rng)
@@ -243,8 +245,8 @@ def _write_hypno_txt_sample(filename, hypno, window=1.):
                                                   x.value_counts().index[0])
         hypno = ts.values
 
-    np.savetxt(filename, hypno, fmt='%s', delimiter='\n', newline='\n',
-               header=pd.Series(hdr).to_string(index=False))
+    # Save hypnogram
+    np.savetxt(filename, hypno, fmt='%s', delimiter='\n', newline='\n')
 
 
 def _write_hypno_hyp_sample(filename, hypno, sf=100., npts=1):

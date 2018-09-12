@@ -2,6 +2,7 @@
 
 
 import numpy as np
+import datetime
 import os
 from PyQt5 import QtWidgets
 
@@ -100,8 +101,8 @@ class UiMenu(HelpMenu):
         if reply is None:
             msg = ("Since release 0.4, hypnogram are exported using stage "
                    "duration rather than point-per-second. This new format "
-                   "avoids potential errors caused by downsampling and "
-                   "confusion in the values assigned to each sleep stage. \n\n"
+                   "avoids confusion in the values assigned to each "
+                   "sleep stage. \n\n"
                    "Click 'Yes' to use the new format and 'No' to use the old "
                    "format. For more information, visit the doc at "
                    "visbrain.org/sleep")
@@ -109,6 +110,7 @@ class UiMenu(HelpMenu):
                                                    QtWidgets.QMessageBox.Yes,
                                                    QtWidgets.QMessageBox.No)
         if reply == QtWidgets.QMessageBox.No:  # v1 = sample
+            # Ask for epoch duration
             msg = ("Please enter the epoch duration (1 = 1 value per second, "
                    "30 = 1 value per 30 seconds.")
             win, _ = QtWidgets.QInputDialog.getInt(self, 'Epoch duration', msg,
@@ -120,14 +122,14 @@ class UiMenu(HelpMenu):
                           "(*.xlsx)")
             version = 'time'
             win = 1
+
         # Open dialog window :
         if filename is None:
             filename = dialog_save(self, 'Save File', hyp_file, dialog_ext +
                                    ";;All files (*.*)")
         if filename:
-            info = {'Duration_sec': self._N * 1 / self._sfori}
-            if isinstance(self._file, str):
-                info['Datafile'] = self._file
+            info = {'Duration': self._N * 1 / self._sfori,
+                    'Date': datetime.datetime.now().strftime("%Y-%m-%d_%H:%M")}
             write_hypno(filename, self._hypno, version=version, sf=self._sfori,
                         npts=self._N, time=self._time, window=win, info=info)
 
