@@ -231,9 +231,14 @@ def _write_hypno_txt_sample(filename, hypno, window=1., info=None):
     descript = os.path.join(dirname,
                             os.path.splitext(base)[0] + '_description.txt')
 
-    # Save header file
+    # Create header file
     hdr = np.array([['time ' + str(window)], ['W 0'], ['N1 1'], ['N2 2'],
                     ['N3 3'], ['REM 4'], ['Art -1']]).flatten()
+
+    # Append additional infos
+    if isinstance(info, dict):
+        for key, val in info.items():
+            hdr = np.append(hdr, " ".join([key, str(val)]))
 
     np.savetxt(descript, hdr, fmt='%s')
 
