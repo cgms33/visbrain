@@ -1,3 +1,1 @@
-Hypnogram
-- Add scorer / date in header file write_hypno_txt_sample
-- Replace hypno_description file by in-file header (but keep compatibility)
+Replace findpeaks function by scipy built-in find_peaks
