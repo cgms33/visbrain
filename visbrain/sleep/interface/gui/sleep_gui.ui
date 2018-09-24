@@ -103,7 +103,7 @@
            <enum>QTabWidget::Rounded</enum>
           </property>
           <property name="currentIndex">
-           <number>0</number>
+           <number>1</number>
           </property>
           <property name="movable">
            <bool>true</bool>
@@ -251,8 +251,8 @@ type</string>
                        <rect>
                         <x>0</x>
                         <y>0</y>
-                        <width>341</width>
-                        <height>652</height>
+                        <width>98</width>
+                        <height>71</height>
                        </rect>
                       </property>
                       <layout class="QVBoxLayout" name="verticalLayout_14">
@@ -1596,7 +1596,7 @@ type</string>
             <item>
              <widget class="QStackedWidget" name="_stacked_tools">
               <property name="currentIndex">
-               <number>1</number>
+               <number>0</number>
               </property>
               <widget class="QWidget" name="_sigproc_page">
                <layout class="QVBoxLayout" name="verticalLayout_25">
@@ -1851,18 +1851,6 @@ to</string>
                           </property>
                          </widget>
                         </item>
-                        <item row="3" column="0">
-                         <widget class="QLabel" name="label_58">
-                          <property name="font">
-                           <font>
-                            <italic>true</italic>
-                           </font>
-                          </property>
-                          <property name="text">
-                           <string>Settings</string>
-                          </property>
-                         </widget>
-                        </item>
                         <item row="4" column="2">
                          <spacer name="horizontalSpacer_40">
                           <property name="orientation">
@@ -2050,70 +2038,6 @@ to</string>
                            <enum>Qt::Vertical</enum>
                           </property>
                          </widget>
-                        </item>
-                        <item row="3" column="2">
-                         <layout class="QGridLayout" name="gridLayout_10">
-                          <property name="topMargin">
-                           <number>0</number>
-                          </property>
-                          <item row="0" column="0">
-                           <widget class="QLabel" name="label_10">
-                            <property name="text">
-                             <string>Method</string>
-                            </property>
-                           </widget>
-                          </item>
-                          <item row="1" column="0">
-                           <widget class="QLabel" name="label_11">
-                            <property name="text">
-                             <string>order</string>
-                            </property>
-                           </widget>
-                          </item>
-                          <item row="1" column="1">
-                           <widget class="QSpinBox" name="_SigFiltOrder">
-                            <property name="toolTip">
-                             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Choose filter order and control narrow band. It is not recommended to use filter order over 3 (can provoc distorsion).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                            </property>
-                            <property name="minimum">
-                             <number>1</number>
-                            </property>
-                            <property name="maximum">
-                             <number>20</number>
-                            </property>
-                            <property name="value">
-                             <number>3</number>
-                            </property>
-                           </widget>
-                          </item>
-                          <item row="0" column="1">
-                           <widget class="QComboBox" name="_SigFiltMeth">
-                            <item>
-                             <property name="text">
-                              <string>butterworth</string>
-                             </property>
-                            </item>
-                            <item>
-                             <property name="text">
-                              <string>bessel</string>
-                             </property>
-                            </item>
-                           </widget>
-                          </item>
-                          <item row="2" column="1">
-                           <spacer name="horizontalSpacer_41">
-                            <property name="orientation">
-                             <enum>Qt::Horizontal</enum>
-                            </property>
-                            <property name="sizeHint" stdset="0">
-                             <size>
-                              <width>40</width>
-                              <height>0</height>
-                             </size>
-                            </property>
-                           </spacer>
-                          </item>
-                         </layout>
                         </item>
                        </layout>
                       </item>
@@ -2383,8 +2307,8 @@ re-referenced</string>
                        <rect>
                         <x>0</x>
                         <y>0</y>
-                        <width>345</width>
-                        <height>346</height>
+                        <width>381</width>
+                        <height>315</height>
                        </rect>
                       </property>
                       <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -4472,7 +4396,7 @@ display</string>
      <x>0</x>
      <y>0</y>
      <width>1359</width>
-     <height>23</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFiles">

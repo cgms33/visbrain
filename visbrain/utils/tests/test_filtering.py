@@ -20,10 +20,7 @@ class TestFiltering(object):
     def __iter__(self):
         """Iterate over filtering options."""
         btype = ['bandpass', 'bandstop', 'highpass', 'lowpass']
-        order = [2, 3, 5]
-        method = ['butterworth', 'bessel']
-        way = ['filtfilt', 'lfilter']
-        for k in product(btype, order, method, way):
+        for k in btype:
             yield k
 
     def test_filt(self):

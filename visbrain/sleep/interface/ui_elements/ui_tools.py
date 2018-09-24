@@ -169,8 +169,6 @@ class UiTools(object):
         filt = self._SigFilt.isChecked()
         fstart = self._SigFiltFrom.value()
         fend = self._SigFiltTo.value()
-        filttype = str(self._SigFiltMeth.currentText())
-        filtorder = self._SigFiltOrder.value()
         filtband = str(self._SigFiltBand.currentText())
 
         # Filt a specific channel :
@@ -189,9 +187,7 @@ class UiTools(object):
         self._chan.filt = filt
         self._chan.fstart = fstart
         self._chan.fend = fend
-        self._chan.forder = filtorder
-        self._chan.filt_type = filttype
-        self._chan.filt_band = filtband
+        self._chan.btype = filtband
 
         self._chan.update()
 
@@ -205,9 +201,7 @@ class UiTools(object):
         self._spec.filt = filt and channel in [-1, chan]
         self._spec.fstart = fstart
         self._spec.fend = fend
-        self._spec.forder = filtorder
-        self._spec.filt_type = filttype
-        self._spec.filt_band = filtband
+        self._spec.btype = filtband
 
         self._spec.update()
 
@@ -217,13 +211,9 @@ class UiTools(object):
         dispas = self._SigFiltDisp.currentText()
         if dispas == 'filter':
             self._SigFiltBand.setEnabled(True)
-            self._SigFiltMeth.setEnabled(True)
-            self._SigFiltOrder.setEnabled(True)
             self._fcn_filt_band()
         else:
             self._SigFiltBand.setEnabled(False)
-            self._SigFiltMeth.setEnabled(False)
-            self._SigFiltOrder.setEnabled(False)
         # Run filter :
         self._fcn_sig_processing()
 

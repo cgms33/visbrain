@@ -1,8 +1,9 @@
 """Set of tools to filter data."""
 
 import numpy as np
+from mne.filter import filter_data
 from mne.time_frequency import morlet as _morlet_wlt
-from scipy.signal import butter, filtfilt, lfilter, bessel, welch, detrend
+from scipy.signal import welch, detrend
 
 __all__ = ('filt', 'morlet', 'ndmorlet', 'morlet_power', 'welch_power',
            'PrepareData')
@@ -12,8 +13,7 @@ __all__ = ('filt', 'morlet', 'ndmorlet', 'morlet_power', 'welch_power',
 #############################################################################
 
 
-def filt(sf, f, x, btype='bandpass', order=3, method='butterworth',
-         way='filtfilt', axis=0):
+def filt(sf, f, x, btype='bandpass'):
     """Filt data.
 
     Parameters
@@ -27,40 +27,26 @@ def filt(sf, f, x, btype='bandpass', order=3, method='butterworth',
     btype : {'bandpass', 'bandstop', 'highpass', 'lowpass'}
         If highpass, the first value of f will be used. If lowpass
         the second value of f will be used.
-    order : int | 3
-        The filter order.
-    method : {'butterworth', 'bessel'}
-        Filter type to use.
-    way : {'filtfilt', 'lfilter'}
-        Specify if the filter has to be one way ('lfilter') or two ways
-        ('filtfilt').
-    axis : int | 0
-        The axis along which the filter is applied.
 
     Returns
     -------
     xfilt : array_like
         Filtered data.
     """
-    # Normalize frequency vector according to btype :
-    if btype in ['bandpass', 'bandstop']:
-        fnorm = np.divide(f, .5 * sf)
-    elif btype == 'lowpass':
-        fnorm = np.array(f[-1] / (.5 * sf))
+    if btype == 'bandpass':
+        low, high = f[0], f[1]
+    elif btype == 'bandstop':
+        high, low = f[0], f[1]
     elif btype == 'highpass':
-        fnorm = np.array(f[0] / (.5 * sf))
+        low = f[0]
+        high = None
+    elif btype == 'lowpass':
+        low = None
+        high = f[1]
 
-    # Get filter coefficients :
-    if method == 'butterworth':
-        b, a = butter(order, fnorm, btype=btype)
-    elif method == 'bessel':
-        b, a = bessel(order, fnorm, btype=btype)
-
-    # Apply filter :
-    if way == 'filtfilt':
-        return filtfilt(b, a, x, axis=axis)
-    elif way == 'lfilter':
-        return lfilter(b, a, x, axis=axis)
+    return filter_data(x.astype(np.float64), sf, low, high, method='fir',
+                       phase='zero', fir_window='hamming', fir_design='firwin',
+                       pad='reflect_limited', verbose=0)
 
 #############################################################################
 # WAVELET
@@ -233,8 +219,7 @@ class PrepareData(object):
     """
 
     def __init__(self, axis=0, demean=False, detrend=False, filt=False,
-                 fstart=12., fend=16., forder=3, way='lfilter',
-                 filt_meth='butterworth', btype='bandpass', dispas='filter'):
+                 fstart=12., fend=16., btype='bandpass', dispas='filter'):
         """Init."""
         # Axis along which to perform preparation :
         self.axis = axis
@@ -244,8 +229,7 @@ class PrepareData(object):
         # Filtering :
         self.filt = filt
         self.fstart, self.fend = fstart, fend
-        self.forder, self.filt_meth = forder, filt_meth
-        self.way, self.btype = way, btype
+        self.btype = btype
         self.dispas = dispas
 
     def __bool__(self):
@@ -267,8 +251,7 @@ class PrepareData(object):
         if self.filt:
             if self.dispas == 'filter':
                 data = filt(sf, np.array([self.fstart, self.fend]), data,
-                            btype=self.btype, order=self.forder, way=self.way,
-                            method=self.filt_meth, axis=self.axis)
+                            btype=self.btype)
             else:
                 # Compute ndwavelet :
                 f = np.array([self.fstart, self.fend]).mean()
