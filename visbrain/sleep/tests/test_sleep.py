@@ -20,9 +20,9 @@ if not os.path.isfile(sleep_file):
 onset = np.array([100, 2000, 5000])
 
 # Create Sleep application :
-kwargs_mne = {'exclude' : ['VAB', 'NAF2P-A1', 'PCPAP', 'POS', 'FP2-A1',
-                           'O2-A1', 'CZ2-A1', 'event_pneumo',
-                           'event_pneumo_aut']}
+kwargs_mne = {'exclude': ['VAB', 'NAF2P-A1', 'PCPAP', 'POS', 'FP2-A1',
+                          'O2-A1', 'CZ2-A1', 'event_pneumo',
+                          'event_pneumo_aut']}
 sp = Sleep(data=sleep_file, hypno=hypno_file, axis=True, annotations=onset,
            kwargs_mne=kwargs_mne)
 

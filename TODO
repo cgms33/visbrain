@@ -1,1 +1,0 @@
-Replace findpeaks function by scipy built-in find_peaks

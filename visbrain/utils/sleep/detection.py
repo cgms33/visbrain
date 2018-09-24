@@ -11,7 +11,7 @@ Perform:
 - Peak detection
 """
 import numpy as np
-from scipy.signal import hilbert, detrend, welch
+from scipy.signal import hilbert, welch
 
 from ..filtering import filt, morlet, morlet_power
 from ..sigproc import derivative, tkeo, smoothing, normalization
