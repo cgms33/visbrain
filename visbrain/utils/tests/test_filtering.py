@@ -1,7 +1,6 @@
 """Test functions in filetring.py."""
 import numpy as np
 import math
-from itertools import product
 
 from visbrain.utils.filtering import (filt, morlet, ndmorlet, morlet_power,
                                       welch_power, PrepareData)

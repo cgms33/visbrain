@@ -3,13 +3,12 @@
 This file contain functions to load PSG and hypnogram files.
 """
 import os
-import io
 import logging
+import datetime
 import numpy as np
 from warnings import warn
 from scipy.stats import iqr
 from mne.filter import resample
-from datetime import datetime, time
 
 from .rw_utils import get_file_ext
 from .rw_hypno import (read_hypno, oversample_hypno)
@@ -80,7 +79,7 @@ class ReadSleepData(object):
                                  "frequency parameter, sf, must either be an "
                                  "integer or a float.")
             file = annot = None
-            offset = time(0, 0, 0)
+            offset = datetime.time(0, 0, 0)
             n = data.shape[1]
             dsf = downsample / sf if downsample is not None else 1
             data = resample(data, dsf)
@@ -203,6 +202,7 @@ class ReadSleepData(object):
 ###############################################################################
 ###############################################################################
 
+
 def read_elan(path, downsample):
     """Read data from a ELAN (eeg) file.
 
@@ -257,10 +257,10 @@ def read_elan(path, downsample):
     # Record starting time
     if ent[4] != "No time":
         hour, minutes, sec = ent[4].split(':')
-        start_time = time(int(hour), int(minutes), int(sec))
+        start_time = datetime.time(int(hour), int(minutes), int(sec))
         day, month, year = ent[3].split(':')
     else:
-        start_time = time(0, 0, 0)
+        start_time = datetime.time(0, 0, 0)
 
     # Channels
     nb_chan = np.int(ent[9])
@@ -362,7 +362,7 @@ def mne_switch(file, ext, downsample, preload=True, **kwargs):
         raw = io.read_raw_cnt(path, **kwargs)
     elif ext.lower() == '.vhdr':  # BrainVision
         raw = io.read_raw_brainvision(path, **kwargs)
-    elif ext.lower() == '.nxe': # Eximia
+    elif ext.lower() == '.nxe':  # Eximia
         raw = io.read_raw_eximia(path, **kwargs)
     else:
         raise IOError("File not supported by mne-python.")
@@ -392,10 +392,11 @@ def mne_switch(file, ext, downsample, preload=True, **kwargs):
         data /= np.array(units).reshape(-1, 1)
 
     # Check time
-    if raw.info['meas_date'] is not None:
-        start_time = datetime.utcfromtimestamp(raw.info['meas_date']).time()
+    meas = raw.info['meas_date']
+    if meas is not None:
+        start_time = datetime.datetime.utcfromtimestamp(meas).time()
     else:
-        start_time = time(0, 0, 0)
+        start_time = datetime.time(0, 0, 0)
 
     anot = raw.annotations
 

@@ -1,7 +1,6 @@
 """This script contains some other utility functions."""
 import logging
 
-import numpy as np
 from vispy.util import profiler
 
 
@@ -52,6 +51,7 @@ class Profiler(object):
     def _new_msg(msg):
         msg += ' ' if msg[-1] != ' ' else ''
         return msg
+
 
 def set_if_not_none(to_set, value, cond=True):
     """Set a variable if the value is not None.
