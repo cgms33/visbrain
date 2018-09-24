@@ -4,12 +4,12 @@ This file contain functions to load PSG and hypnogram files.
 """
 import os
 import io
+import logging
 import numpy as np
-import datetime
 from warnings import warn
 from scipy.stats import iqr
 from mne.filter import resample
-import logging
+from datetime import datetime, time
 
 from .rw_utils import get_file_ext
 from .rw_hypno import (read_hypno, oversample_hypno)
@@ -80,7 +80,7 @@ class ReadSleepData(object):
                                  "frequency parameter, sf, must either be an "
                                  "integer or a float.")
             file = annot = None
-            offset = datetime.time(0, 0, 0)
+            offset = time(0, 0, 0)
             n = data.shape[1]
             dsf = downsample / sf if downsample is not None else 1
             data = resample(data, dsf)
@@ -257,10 +257,10 @@ def read_elan(path, downsample):
     # Record starting time
     if ent[4] != "No time":
         hour, minutes, sec = ent[4].split(':')
-        start_time = datetime.time(int(hour), int(minutes), int(sec))
+        start_time = time(int(hour), int(minutes), int(sec))
         day, month, year = ent[3].split(':')
     else:
-        start_time = datetime.time(0, 0, 0)
+        start_time = time(0, 0, 0)
 
     # Channels
     nb_chan = np.int(ent[9])
@@ -391,7 +391,12 @@ def mne_switch(file, ext, downsample, preload=True, **kwargs):
         units = raw._raw_extras[0]['units'][0:data.shape[0]]
         data /= np.array(units).reshape(-1, 1)
 
-    start_time = datetime.time(0, 0, 0)  # raw.info['meas_date']
+    # Check time
+    if raw.info['meas_date'] is not None:
+        start_time = datetime.utcfromtimestamp(raw.info['meas_date']).time()
+    else:
+        start_time = time(0, 0, 0)
+
     anot = raw.annotations
 
     return sf, downsample, data, channels, n, start_time, anot
