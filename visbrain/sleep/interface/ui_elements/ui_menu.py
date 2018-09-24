@@ -257,7 +257,6 @@ class UiMenu(HelpMenu):
             config['Spec_Fstart'] = self._PanSpecFstart.value()
             config['Spec_Fend'] = self._PanSpecFend.value()
             config['Spec_Con'] = self._PanSpecCon.value()
-            config['Spec_Interp'] = self._PanSpecInterp.currentIndex()
             # Hypnogram/time axis/navigation/topo/indic/zoom :
             config['Hyp_Visible'] = self.menuDispHypno.isChecked()
             config['Time_Visible'] = self.menuDispTimeax.isChecked()
@@ -379,8 +378,6 @@ class UiMenu(HelpMenu):
                 _try("self._PanSpecFstart.setValue(config['Spec_Fstart'])")
                 _try("self._PanSpecFend.setValue(config['Spec_Fend'])")
                 _try("self._PanSpecCon.setValue(config['Spec_Con'])")
-                _try("self._PanSpecInterp.setCurrentIndex("
-                     "config['Spec_Interp'])")
                 # Hypnogram/time axis/navigation/topo/indic/zoom :
                 _try("self.menuDispHypno.setChecked(config['Hyp_Visible'])")
                 _try("self.menuDispTimeax.setChecked(config['Time_Visible'])")
