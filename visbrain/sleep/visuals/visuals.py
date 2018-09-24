@@ -433,7 +433,7 @@ class Spectrogram(PrepareData):
 
     def set_data(self, sf, data, time, method='Fourier transform',
                  cmap='rainbow', nfft=30., overlap=0., fstart=.5, fend=20.,
-                 contrast=.5, interp='nearest', norm=0):
+                 contrast=.5):
         """Set data to the spectrogram.
 
         Use this method to change data, colormap, spectrogram settings, the
@@ -461,10 +461,6 @@ class Spectrogram(PrepareData):
             Frequency from which the spectrogram have to finish.
         contrast : float | .5
             Contrast of the colormap.
-        interp : string | 'nearest'
-            Interpolation method.
-        norm : int | 0
-            Normalization method for TF.
         """
         # =================== PREPARE DATA ===================
         # Prepare data (only if needed)
@@ -474,64 +470,55 @@ class Spectrogram(PrepareData):
         nperseg = int(round(nfft * sf))
 
         # =================== TF // SPECTRO ===================
-        if method == 'Wavelet':
-            self.tf.set_data(data, sf, f_min=fstart, f_max=fend, cmap=cmap,
-                             contrast=contrast, n_window=nperseg,
-                             overlap=overlap, window='hamming', norm=norm)
-            self.tf._image.interpolation = interp
-            self.rect = self.tf.rect
-            self.freq = self.tf.freqs
-        else:
-            # =================== CONVERSION ===================
-            overlap = int(round(overlap * nperseg))
+        overlap = int(round(overlap * nperseg))
 
-            if method == 'Multitaper':
-                from lspopt import spectrogram_lspopt
-                freq, _, mesh = spectrogram_lspopt(data, fs=sf,
-                                                   nperseg=nperseg,
-                                                   c_parameter=20,
-                                                   noverlap=overlap)
-            elif method == 'Fourier transform':
-                freq, _, mesh = scpsig.spectrogram(data, fs=sf,
-                                                   nperseg=nperseg,
-                                                   noverlap=overlap,
-                                                   window='hamming')
-            mesh = 20 * np.log10(mesh)
+        if method == 'Multitaper':
+            from lspopt import spectrogram_lspopt
+            freq, _, mesh = spectrogram_lspopt(data, fs=sf,
+                                               nperseg=nperseg,
+                                               c_parameter=20,
+                                               noverlap=overlap)
+        elif method == 'Fourier transform':
+            freq, _, mesh = scpsig.spectrogram(data, fs=sf,
+                                               nperseg=nperseg,
+                                               noverlap=overlap,
+                                               window='hamming')
+        mesh = 20 * np.log10(mesh)
 
-            # =================== FREQUENCY SELECTION ===================
-            # Find where freq is [fstart, fend] :
-            f = [0., 0.]
-            f[0] = np.abs(freq - fstart).argmin() if fstart else 0
-            f[1] = np.abs(freq - fend).argmin() if fend else len(freq)
-            # Build slicing and select frequency vector :
-            sls = slice(f[0], f[1] + 1)
-            freq = freq[sls]
-            self._fstart, self._fend = freq[0], freq[-1]
+        # =================== FREQUENCY SELECTION ===================
+        # Find where freq is [fstart, fend] :
+        f = [0., 0.]
+        f[0] = np.abs(freq - fstart).argmin() if fstart else 0
+        f[1] = np.abs(freq - fend).argmin() if fend else len(freq)
+        # Build slicing and select frequency vector :
+        sls = slice(f[0], f[1] + 1)
+        freq = freq[sls]
+        self._fstart, self._fend = freq[0], freq[-1]
 
-            # =================== COLOR ===================
-            # Get clim :
-            clim = (contrast * mesh.min(), contrast * mesh.max())
-            # Turn mesh into color array for selected frequencies:
-            self.mesh.set_data(array2colormap(mesh[sls, :], cmap=cmap,
-                                              clim=clim))
-            self.mesh.interpolation = interp
+        # =================== COLOR ===================
+        # Get clim :
+        clim = (contrast * mesh.min(), contrast * mesh.max())
+        # Turn mesh into color array for selected frequencies:
+        self.mesh.set_data(array2colormap(mesh[sls, :], cmap=cmap,
+                                          clim=clim))
 
-            # =================== TRANSFORM ===================
-            tm, th = time.min(), time.max()
-            # Re-scale the mesh for fitting in time / frequency :
-            fact = (freq.max() - freq.min()) / len(freq)
-            sc = (th / mesh.shape[1], fact, 1)
-            tr = [0., freq.min(), 0.]
-            self.mesh.transform.translate = tr
-            self.mesh.transform.scale = sc
-            # Update object :
-            self.mesh.update()
-            # Get camera rectangle :
-            self.rect = (tm, freq.min(), th - tm, freq.max() - freq.min())
-            self.freq = freq
+        # =================== TRANSFORM ===================
+        tm, th = time.min(), time.max()
+        # Re-scale the mesh for fitting in time / frequency :
+        fact = (freq.max() - freq.min()) / len(freq)
+        sc = (th / mesh.shape[1], fact, 1)
+        tr = [0., freq.min(), 0.]
+        self.mesh.transform.translate = tr
+        self.mesh.transform.scale = sc
+        # Update object :
+        self.mesh.update()
+        # Get camera rectangle :
+        self.rect = (tm, freq.min(), th - tm, freq.max() - freq.min())
+        self.freq = freq
+
         # Visibility :
-        self.mesh.visible = 0 if method == 'Wavelet' else 1
-        self.tf.visible = 1 if method == 'Wavelet' else 0
+        self.mesh.visible = 1
+        self.tf.visible = 0
 
     def clean(self):
         """Clean indicators."""
@@ -551,21 +538,6 @@ class Spectrogram(PrepareData):
         """Set rect value."""
         self._rect = value
         self._camera.rect = value
-
-    # ----------- INTERP -----------
-    @property
-    def interp(self):
-        """Get the interp value."""
-        return self._interp
-
-    @interp.setter
-    def interp(self, value):
-        """Set interp value."""
-        self._interp = value
-        self.mesh.interpolation = value
-        self.mesh.update()
-        self.tf.interpolation = value
-        self.tf.update()
 
 
 class Hypnogram(object):

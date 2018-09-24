@@ -1,6 +1,7 @@
 """Set of tools to filter data."""
 
 import numpy as np
+from mne.time_frequency import morlet as _morlet_wlt
 from scipy.signal import butter, filtfilt, lfilter, bessel, welch, detrend
 
 __all__ = ('filt', 'morlet', 'ndmorlet', 'morlet_power', 'welch_power',
@@ -66,35 +67,7 @@ def filt(sf, f, x, btype='bandpass', order=3, method='butterworth',
 #############################################################################
 
 
-def _morlet_wlt(sf, f, width=7.0):
-    """Get a Morlet's wavelet.
-
-    Parameters
-    ----------
-    sf : float
-        Sampling frequency.
-    f : array_like
-        Frequency vector of shape (2,).
-    width : float | 7.0
-        Width of the wavelet.
-    wlt: array_like
-        Morlet wavelet.
-    """
-    sf, f, width = float(sf), float(f), float(width)
-    dt = 1 / sf
-    sf = f / width
-    st = 1 / (2 * np.pi * sf)
-
-    # Build morlet wavelet :
-    t = np.arange(-width * st / 2, width * st / 2, dt)
-    a = 1 / np.sqrt((st * np.sqrt(np.pi)))
-    wlt = a * np.exp(-np.square(t) / (2 * np.square(st))) * np.exp(
-        1j * 2 * np.pi * f * t)
-
-    return wlt
-
-
-def morlet(x, sf, f, width=7.0):
+def morlet(x, sf, f, width=7):
     """Complex decomposition of a signal x using the morlet wavelet.
 
     Parameters
@@ -104,24 +77,19 @@ def morlet(x, sf, f, width=7.0):
         a vector of length N.
     sf : float
         Sampling frequency
-    f : array_like, shape (2,)
-        Frequency vector
-    width : float | 7.0
-        Width of the wavelet
+    f : float
+        Central frequency
+    width : float
+        Number of oscillations of the wavelet
 
     Returns
     -------
     xout: array_like
         The complex decomposition of the signal x.
     """
-    # Get the wavelet :
-    m = _morlet_wlt(sf, f, width)
-
-    # Compute morlet :
-    y = np.convolve(x, m)
-    xout = y[int(np.ceil(len(m) / 2)) - 1:int(len(y) - np.floor(len(m) / 2))]
-
-    return xout
+    # Get the wavelet and convolve with signal
+    m = _morlet_wlt(sf, freqs=[f], n_cycles=width)[0]
+    return np.convolve(x, m, mode='same')
 
 
 def ndmorlet(x, sf, f, axis=0, get=None, width=7.0):
@@ -137,28 +105,26 @@ def ndmorlet(x, sf, f, axis=0, get=None, width=7.0):
         Frequency vector of shape (2,)
     axis : integer | 0
         Specify the axis where is located the time dimension
-    get : {None, 'amplitude', 'phase', 'power'}
-        Specify if the amplitude, phase or power of the filtered signal have to
-        be returned or only the filtered signal.
+    get : {'amplitude', 'phase', 'power'}
+        Specify whether to return the amplitude, phase or power of the
+        analytic signal.
     width : float | 7.0
         Width of the wavelet
 
     Returns
     -------
-        xout: array, same shape as x
-            Complex decomposition of x.
+    xf : array, same shape as x
+        Complex decomposition of x.
     """
     # Get the wavelet :
-    m = _morlet_wlt(sf, f, width)
+    m = _morlet_wlt(sf, freqs=[f], n_cycles=width)[0]
 
     # Define a morlet function :
     def morlet_fcn(xt):
-        # Compute morlet :
-        y = np.convolve(xt, m)
-        return y[int(np.ceil(len(m) / 2)) - 1:int(len(y) - np.floor(
-            len(m) / 2))]
+        return np.convolve(x, m, mode='same')
 
     xf = np.apply_along_axis(morlet_fcn, axis, x)
+
     # Get amplitude / power / phase :
     if get == 'amplitude':
         return np.abs(xf)

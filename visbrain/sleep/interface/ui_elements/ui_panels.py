@@ -84,7 +84,7 @@ class UiPanels(object):
         # Add list of channels :
         self._PanSpecChan.addItems(self._channels)
         # Disable multitaper option if not is_lspopt_installed
-        self._PanSpecMethod.model().item(2).setEnabled(is_lspopt_installed())
+        self._PanSpecMethod.model().item(1).setEnabled(is_lspopt_installed())
         # Connect spectrogam properties :
         self._PanSpecApply.setEnabled(False)
         self._PanSpecApply.clicked.connect(self._fcn_spec_set_data)
@@ -97,8 +97,6 @@ class UiPanels(object):
         self._PanSpecChan.currentIndexChanged.connect(self._fcn_spec_compat)
         self._PanSpecMethod.currentIndexChanged.connect(self._fcn_spec_compat)
         self._PanSpecCmapInv.clicked.connect(self._fcn_spec_compat)
-        self._PanSpecNorm.currentIndexChanged.connect(self._fcn_spec_compat)
-        self._PanSpecInterp.currentIndexChanged.connect(self._fcn_spec_interp)
         PROFILER("Spectrogram", level=2)
 
         # =====================================================================
@@ -441,10 +439,6 @@ class UiPanels(object):
         chan = self._PanSpecChan.currentIndex()
         # Use spectrogram / tf :
         method = str(self._PanSpecMethod.currentText())
-        # Interpolation :
-        interp = str(self._PanSpecInterp.currentText())
-        # Normalization :
-        norm = int(self._PanSpecNorm.currentIndex())
         # Get reversed colormap :
         if self._PanSpecCmapInv.isChecked():
             cmap += '_r'
@@ -452,8 +446,7 @@ class UiPanels(object):
         # Set data :
         self._spec.set_data(self._sf, self._data[chan, ...], self._time,
                             nfft=nfft, overlap=over, fstart=fstart, fend=fend,
-                            cmap=cmap, contrast=contrast, interp=interp,
-                            norm=norm, method=method)
+                            cmap=cmap, contrast=contrast, method=method)
         # Set apply button disable :
         self._PanSpecApply.setEnabled(False)
 
@@ -463,21 +456,12 @@ class UiPanels(object):
         nfft, _ = self._PanSpecNfft.value(), self._PanSpecStep.value()
         # Get starting / ending frequency :
         _, fend = self._PanSpecFstart.value(), self._PanSpecFend.value()  # noqa
-        # Enable / disable normalization :
-        use_tf = 1 if str(self._PanSpecMethod.currentText()
-                          ) == 'Wavelet' else 0
-        self._PanSpecNormW.setEnabled(use_tf)
 
         self._PanSpecStep.setMaximum(nfft * .99)
         self._PanSpecFend.setMaximum(self._sf / 2)
         self._PanSpecFstart.setMaximum(fend - 0.99)
         # Set apply button enable :
         self._PanSpecApply.setEnabled(True)
-
-    def _fcn_spec_interp(self):
-        """Change the 2-D interpolation method."""
-        # Interpolation :
-        self._spec.interp = str(self._PanSpecInterp.currentText())
 
     # =====================================================================
     # HYPNOGRAM

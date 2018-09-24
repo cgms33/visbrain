@@ -103,7 +103,7 @@
            <enum>QTabWidget::Rounded</enum>
           </property>
           <property name="currentIndex">
-           <number>4</number>
+           <number>0</number>
           </property>
           <property name="movable">
            <bool>true</bool>
@@ -197,7 +197,7 @@ type</string>
                <enum>QFrame::NoFrame</enum>
               </property>
               <property name="currentIndex">
-               <number>0</number>
+               <number>1</number>
               </property>
               <widget class="QWidget" name="_channels_page">
                <layout class="QVBoxLayout" name="verticalLayout_34">
@@ -252,7 +252,7 @@ type</string>
                         <x>0</x>
                         <y>0</y>
                         <width>341</width>
-                        <height>657</height>
+                        <height>652</height>
                        </rect>
                       </property>
                       <layout class="QVBoxLayout" name="verticalLayout_14">
@@ -575,11 +575,6 @@ type</string>
                     </item>
                     <item>
                      <property name="text">
-                      <string>Wavelet</string>
-                     </property>
-                    </item>
-                    <item>
-                     <property name="text">
                       <string>Multitaper</string>
                      </property>
                     </item>
@@ -742,166 +737,8 @@ channel</string>
                   </item>
                   <item row="3" column="2">
                    <layout class="QGridLayout" name="gridLayout_12">
-                    <item row="5" column="2">
-                     <spacer name="horizontalSpacer">
-                      <property name="orientation">
-                       <enum>Qt::Horizontal</enum>
-                      </property>
-                      <property name="sizeHint" stdset="0">
-                       <size>
-                        <width>40</width>
-                        <height>0</height>
-                       </size>
-                      </property>
-                     </spacer>
-                    </item>
                     <item row="0" column="1">
                      <widget class="Line" name="line_31">
-                      <property name="minimumSize">
-                       <size>
-                        <width>10</width>
-                        <height>0</height>
-                       </size>
-                      </property>
-                      <property name="orientation">
-                       <enum>Qt::Vertical</enum>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="3" column="0">
-                     <widget class="QLabel" name="label_74">
-                      <property name="font">
-                       <font>
-                        <italic>true</italic>
-                       </font>
-                      </property>
-                      <property name="text">
-                       <string>Interpolation</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="3" column="2">
-                     <widget class="QComboBox" name="_PanSpecInterp">
-                      <property name="toolTip">
-                       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select to channel used for the spectrogram&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                      </property>
-                      <item>
-                       <property name="text">
-                        <string>nearest</string>
-                       </property>
-                      </item>
-                      <item>
-                       <property name="text">
-                        <string>bilinear</string>
-                       </property>
-                      </item>
-                      <item>
-                       <property name="text">
-                        <string>gaussian</string>
-                       </property>
-                      </item>
-                      <item>
-                       <property name="text">
-                        <string>hanning</string>
-                       </property>
-                      </item>
-                      <item>
-                       <property name="text">
-                        <string>hamming</string>
-                       </property>
-                      </item>
-                      <item>
-                       <property name="text">
-                        <string>kaiser</string>
-                       </property>
-                      </item>
-                      <item>
-                       <property name="text">
-                        <string>quadric</string>
-                       </property>
-                      </item>
-                      <item>
-                       <property name="text">
-                        <string>bicubic</string>
-                       </property>
-                      </item>
-                      <item>
-                       <property name="text">
-                        <string>bessel</string>
-                       </property>
-                      </item>
-                      <item>
-                       <property name="text">
-                        <string>blackman</string>
-                       </property>
-                      </item>
-                     </widget>
-                    </item>
-                    <item row="1" column="0">
-                     <widget class="QLabel" name="label_15">
-                      <property name="font">
-                       <font>
-                        <italic>true</italic>
-                       </font>
-                      </property>
-                      <property name="text">
-                       <string>Overlap</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="0" column="2">
-                     <widget class="QDoubleSpinBox" name="_PanSpecNfft">
-                      <property name="toolTip">
-                       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Length of each time window for computing the spectrogram&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                      </property>
-                      <property name="decimals">
-                       <number>1</number>
-                      </property>
-                      <property name="minimum">
-                       <double>0.100000000000000</double>
-                      </property>
-                      <property name="maximum">
-                       <double>1000.000000000000000</double>
-                      </property>
-                      <property name="value">
-                       <double>30.000000000000000</double>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="3" column="1">
-                     <widget class="Line" name="line_34">
-                      <property name="minimumSize">
-                       <size>
-                        <width>10</width>
-                        <height>0</height>
-                       </size>
-                      </property>
-                      <property name="orientation">
-                       <enum>Qt::Vertical</enum>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="1" column="2">
-                     <widget class="QDoubleSpinBox" name="_PanSpecStep">
-                      <property name="toolTip">
-                       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Overlap between each consecutive windows (e.g 0 mean no overlap and 0,50 mean 50% overlap)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                      </property>
-                      <property name="decimals">
-                       <number>1</number>
-                      </property>
-                      <property name="maximum">
-                       <double>0.800000000000000</double>
-                      </property>
-                      <property name="singleStep">
-                       <double>0.100000000000000</double>
-                      </property>
-                      <property name="value">
-                       <double>0.000000000000000</double>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="1" column="1">
-                     <widget class="Line" name="line_32">
                       <property name="minimumSize">
                        <size>
                         <width>10</width>
@@ -1004,6 +841,76 @@ channel</string>
                       </property>
                      </widget>
                     </item>
+                    <item row="1" column="0">
+                     <widget class="QLabel" name="label_15">
+                      <property name="font">
+                       <font>
+                        <italic>true</italic>
+                       </font>
+                      </property>
+                      <property name="text">
+                       <string>Overlap</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="0" column="2">
+                     <widget class="QDoubleSpinBox" name="_PanSpecNfft">
+                      <property name="toolTip">
+                       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Length of each time window for computing the spectrogram&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                      </property>
+                      <property name="decimals">
+                       <number>1</number>
+                      </property>
+                      <property name="minimum">
+                       <double>0.100000000000000</double>
+                      </property>
+                      <property name="maximum">
+                       <double>1000.000000000000000</double>
+                      </property>
+                      <property name="value">
+                       <double>30.000000000000000</double>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="3" column="1">
+                     <widget class="Line" name="line_34">
+                      <property name="minimumSize">
+                       <size>
+                        <width>10</width>
+                        <height>0</height>
+                       </size>
+                      </property>
+                      <property name="orientation">
+                       <enum>Qt::Vertical</enum>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="1" column="1">
+                     <widget class="Line" name="line_32">
+                      <property name="minimumSize">
+                       <size>
+                        <width>10</width>
+                        <height>0</height>
+                       </size>
+                      </property>
+                      <property name="orientation">
+                       <enum>Qt::Vertical</enum>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="4" column="2">
+                     <spacer name="horizontalSpacer">
+                      <property name="orientation">
+                       <enum>Qt::Horizontal</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>40</width>
+                        <height>0</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
                     <item row="2" column="0">
                      <widget class="QLabel" name="label_32">
                       <property name="font">
@@ -1016,104 +923,23 @@ channel</string>
                       </property>
                      </widget>
                     </item>
-                    <item row="4" column="0" colspan="3">
-                     <widget class="QWidget" name="_PanSpecNormW" native="true">
-                      <property name="enabled">
-                       <bool>false</bool>
+                    <item row="1" column="2">
+                     <widget class="QDoubleSpinBox" name="_PanSpecStep">
+                      <property name="toolTip">
+                       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Overlap between each consecutive windows (e.g 0 mean no overlap and 0,50 mean 50% overlap)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                       </property>
-                      <property name="minimumSize">
-                       <size>
-                        <width>0</width>
-                        <height>20</height>
-                       </size>
+                      <property name="decimals">
+                       <number>1</number>
                       </property>
-                      <layout class="QGridLayout" name="gridLayout_5">
-                       <property name="leftMargin">
-                        <number>0</number>
-                       </property>
-                       <property name="topMargin">
-                        <number>0</number>
-                       </property>
-                       <property name="rightMargin">
-                        <number>0</number>
-                       </property>
-                       <property name="bottomMargin">
-                        <number>0</number>
-                       </property>
-                       <property name="spacing">
-                        <number>0</number>
-                       </property>
-                       <item row="0" column="1">
-                        <widget class="Line" name="line_35">
-                         <property name="minimumSize">
-                          <size>
-                           <width>10</width>
-                           <height>0</height>
-                          </size>
-                         </property>
-                         <property name="orientation">
-                          <enum>Qt::Vertical</enum>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="0" column="2">
-                        <widget class="QComboBox" name="_PanSpecNorm">
-                         <property name="toolTip">
-                          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select to channel used for the spectrogram&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                         </property>
-                         <item>
-                          <property name="text">
-                           <string>No normalization</string>
-                          </property>
-                         </item>
-                         <item>
-                          <property name="text">
-                           <string>Subtract the mean</string>
-                          </property>
-                         </item>
-                         <item>
-                          <property name="text">
-                           <string>Divide by the mean</string>
-                          </property>
-                         </item>
-                         <item>
-                          <property name="text">
-                           <string>Subtract then divide by the mean</string>
-                          </property>
-                         </item>
-                         <item>
-                          <property name="text">
-                           <string>Z-score</string>
-                          </property>
-                         </item>
-                        </widget>
-                       </item>
-                       <item row="0" column="0">
-                        <widget class="QLabel" name="label_75">
-                         <property name="font">
-                          <font>
-                           <italic>true</italic>
-                          </font>
-                         </property>
-                         <property name="text">
-                          <string>Normalization</string>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="1" column="2">
-                        <spacer name="horizontalSpacer_27">
-                         <property name="orientation">
-                          <enum>Qt::Horizontal</enum>
-                         </property>
-                         <property name="sizeHint" stdset="0">
-                          <size>
-                           <width>40</width>
-                           <height>0</height>
-                          </size>
-                         </property>
-                        </spacer>
-                       </item>
-                      </layout>
+                      <property name="maximum">
+                       <double>0.800000000000000</double>
+                      </property>
+                      <property name="singleStep">
+                       <double>0.100000000000000</double>
+                      </property>
+                      <property name="value">
+                       <double>0.000000000000000</double>
+                      </property>
                      </widget>
                     </item>
                    </layout>
@@ -2557,8 +2383,8 @@ re-referenced</string>
                        <rect>
                         <x>0</x>
                         <y>0</y>
-                        <width>98</width>
-                        <height>298</height>
+                        <width>345</width>
+                        <height>346</height>
                        </rect>
                       </property>
                       <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -4646,7 +4472,7 @@ display</string>
      <x>0</x>
      <y>0</y>
      <width>1359</width>
-     <height>21</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFiles">
