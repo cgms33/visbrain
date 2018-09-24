@@ -143,7 +143,7 @@ class SignalVisual(SignalAnnotations):
         self._axis = axis
         self._index = 0  # selected index of the 3-d array
         self.rect = (0., 0., 1., 1.)
-        self._prep = PrepareData(way='filtfilt')
+        self._prep = PrepareData()
         # Build navigation index :
         if len(sh) in [2, 3]:
             sh = list(sh)

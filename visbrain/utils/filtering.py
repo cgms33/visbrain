@@ -107,7 +107,7 @@ def ndmorlet(x, sf, f, axis=0, get=None, width=7.0):
 
     # Define a morlet function :
     def morlet_fcn(xt):
-        return np.convolve(x, m, mode='same')
+        return np.convolve(xt, m, mode='same')
 
     xf = np.apply_along_axis(morlet_fcn, axis, x)
 

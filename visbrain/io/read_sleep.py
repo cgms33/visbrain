@@ -57,7 +57,6 @@ class ReadSleepData(object):
                 kwargs_mne['preload'] = True
                 args = mne_switch(file, ext, downsample, **kwargs_mne)
             else:  # Load using Sleep functions
-                logger.debug("Loading file using Sleep")
                 args = read_elan(file + ext, downsample)
             # Get output arguments :
             (sf, downsample, data, channels, n, offset, annot) = args

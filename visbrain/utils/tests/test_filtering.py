@@ -25,8 +25,7 @@ class TestFiltering(object):
     def test_filt(self):
         """Test filt function."""
         x, f, sf = self._get_data()
-        for k in self:
-            filt(sf, f, x, *k)
+        filt(sf, f, x)
 
     def test_morlet(self):
         """Test morlet function."""
