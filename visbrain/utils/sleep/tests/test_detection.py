@@ -48,7 +48,6 @@ class TestDetections(object):
     def test_peakdetect(self):
         """Test function peakdetect."""
         # Get a dataset example :
-        data = np.sin(3 * np.pi * 1 * np.arange(100))
-        peakdetect(sf, data, get='min')
-        peakdetect(sf, data, get='max')
-        peakdetect(sf, data, get='minmax', threshold=.6)
+        data = np.sin(3 * np.pi * 1 * np.arange(3000))
+        sf = 100
+        peakdetect(data, sf, distance=0.5, height=0)

@@ -138,12 +138,10 @@ class UiDetection(object):
                 def fcn(data, sf, time, hypno):  # noqa
                     return mtdetect(data, sf, th, hypno, rem_only)
             elif method == 'Peaks':
-                look = int(self._ToolPeakLook.value() * self._sf)
-                _disp = self._ToolPeakMinMax.currentIndex()
-                disp = ['max', 'min', 'minmax'][_disp]
+                distance = self._ToolPeakLook.value()
+                height = self._ToolPeakHeight.value()
                 def fcn(data, sf, time, hypno):  # noqa
-                    return peakdetect(sf, data, self._time, look, 1., disp,
-                                      'auto')
+                    return peakdetect(data, sf, distance, height)
 
         def fcn_check(data, sf, time, hypno):
             """Wrap fcn with type checking."""

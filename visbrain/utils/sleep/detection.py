@@ -617,156 +617,27 @@ def mtdetect(data, sf, threshold, hypno, rem_only, fmin=0., fmax=50.,
 ###########################################################################
 
 
-def peakdetect(sf, y_axis, x_axis=None, lookahead=200, delta=1., get='max',
-               threshold='auto'):
+def peakdetect(data, sf, distance=0.5, height=None):
     """Perform a peak detection.
-
-    Converted from/based on a MATLAB script at:
-    http://billauer.co.il/peakdet.html
-    Original script :
-    https://github.com/DiamondLightSource/auto_tomo_calibration-experimental/
-    blob/master/old_code_scripts/peak_detect.py
-
-    function for detecting local maxima and minima in a signal.
-    Discovers peaks by searching for values which are surrounded by lower
-    or larger values for maxima and minima respectively
 
     Parameters
     ----------
+    data : array_like
+        Signal.
     sf : float
-        The sampling frequency.
-    y_axis : array_like
-        Row vector containing the data.
-    x_axis : array_like
-        Row vector for the time axis. If omitted an index of the y_axis is
-        used.
-    lookahead : int | 200
-        Distance to look ahead from a peak candidate to determine if
-        it is the actual peak.
-        '(samples / period) / f' where '4 >= f >= 1.25' might be a good
-        value
-    delta : float | 1.
-        This specifies a minimum difference between a peak and the
-        following points, before a peak may be considered a peak. Useful
-        to hinder the function from picking up false peaks towards to end
-        of the signal. To work well delta should be set to
-        delta >= RMSnoise * 5.
-        When omitted delta function causes a 20% decrease in speed.
-        When used Correctly it can double the speed of the function
-    get : string | 'max'
-        Get either minimum values ('min'), maximum ('max') or min and max
-        ('minmax').
-    threshold : string/float | None
-        Use a threshold to ignore values. Use None for no threshold, 'auto'
-        to use the signal deviation or a float number for specific
-        threshold.
+        Sampling frequency.
+    distance : float
+        Lookahead distance (in seconds)
+    height : float
+        Required height of peaks.
 
     Returns
     -------
     index : array_like
         A vector containing peak indices of shape (n_events, 2)
     """
-    # ============== CHECK DATA ==============
-    if x_axis is None:
-        x_axis = range(len(y_axis))
-    # Check length :
-    if len(y_axis) != len(x_axis):
-        raise ValueError("Input vectors y_axis and x_axis must have same "
-                         "length")
-    # Needs to be a numpy array
-    y_axis, x_axis = np.asarray(y_axis), np.asarray(x_axis)
-
-    # store data length for later use
-    length = len(y_axis)
-
-    # Lookahead  & delta checking :
-    if lookahead < 1:
-        raise ValueError("Lookahead must be '1' or above in value")
-    if not (np.isscalar(delta) and delta >= 0):
-        raise ValueError("delta must be a positive number")
-
-    # Check get :
-    if get not in ['min', 'max', 'minmax']:
-        raise ValueError("The get parameter must either be 'min', 'max' or"
-                         " 'minmax'")
-
-    # ============== PRE-ALLOCATION ==============
-    max_peaks, min_peaks = [], []
-    dump = []   # Used to pop the first hit which almost always is false
-
-    # maxima and minima candidates are temporarily stored in
-    # mx and mn respectively
-    mn, mx = np.Inf, -np.Inf
-
-    # ============== THRESHOLD ==============
-    if threshold is not None:
-        if threshold is 'auto':
-            threshold = np.std(y_axis)
-        # Detrend / demean y-axis :
-        y_axisp = detrend(y_axis)
-        y_axisp -= y_axisp.mean()
-        # Find values above threshold :
-        above = np.abs(y_axisp) >= threshold
-        zp = zip(np.arange(length)[above], x_axis[above], y_axis[above])
-    else:
-        zp = zip(np.arange(length)[:-lookahead], x_axis[:-lookahead],
-                 y_axis[:-lookahead])
-
-    # ============== FIND MIN / MAX PEAKS ==============
-    # Only detect peak if there is 'lookahead' amount of points after it
-    for index, x, y in zp:
-        if y > mx:
-            mx = y
-        if y < mn:
-            mn = y
-
-        # ==== Look for max ====
-        if y < mx - delta and mx != np.Inf:
-            # Maxima peak candidate found
-            # look ahead in signal to ensure that this is a peak and not jitter
-            if y_axis[index:index + lookahead].max() < mx:
-                max_peaks.append(index)
-                dump.append(True)
-                # set algorithm to only find minima now
-                mx = np.Inf
-                mn = np.Inf
-                if index + lookahead >= length:
-                    # end is within lookahead no more peaks can be found
-                    break
-                continue
-
-        # ==== Look for max ====
-        if y > mn + delta and mn != -np.Inf:
-            # Minima peak candidate found
-            # look ahead in signal to ensure that this is a peak and not jitter
-            if y_axis[index:index + lookahead].min() > mn:
-                min_peaks.append(index)
-                dump.append(False)
-                # set algorithm to only find maxima now
-                mn = -np.Inf
-                mx = -np.Inf
-                if index + lookahead >= length:
-                    # end is within lookahead no more peaks can be found
-                    break
-
-    if min_peaks and max_peaks:
-        # ============== CLEAN ==============
-        # Remove the false hit on the first value of the y_axis
-        if threshold is None:
-            if dump[0]:
-                max_peaks.pop(0)
-            else:
-                min_peaks.pop(0)
-            del dump
-
-        # ============== MIN / MAX / MINMAX ==============
-        if get == 'max':
-            index = np.array(max_peaks)
-        elif get == 'min':
-            index = np.array(min_peaks)
-        elif get == 'minmax':
-            index = np.vstack((min_peaks, max_peaks))
-
-        return np.c_[index, index]
-    else:
-        return np.array([])
+    from scipy.signal import find_peaks
+    # Convert distance to samples
+    distance *= sf
+    peaks, _ = find_peaks(data, height=height, distance=distance)
+    return peaks

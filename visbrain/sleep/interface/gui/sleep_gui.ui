@@ -103,7 +103,7 @@
            <enum>QTabWidget::Rounded</enum>
           </property>
           <property name="currentIndex">
-           <number>1</number>
+           <number>4</number>
           </property>
           <property name="movable">
            <bool>true</bool>
@@ -2307,8 +2307,8 @@ re-referenced</string>
                        <rect>
                         <x>0</x>
                         <y>0</y>
-                        <width>381</width>
-                        <height>315</height>
+                        <width>98</width>
+                        <height>298</height>
                        </rect>
                       </property>
                       <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -2734,7 +2734,7 @@ on</string>
                       </sizepolicy>
                      </property>
                      <property name="currentIndex">
-                      <number>2</number>
+                      <number>5</number>
                      </property>
                      <widget class="QWidget" name="_spin_page">
                       <layout class="QVBoxLayout" name="verticalLayout_19">
@@ -3462,61 +3462,8 @@ Twitches</string>
                          <property name="topMargin">
                           <number>0</number>
                          </property>
-                         <item row="0" column="2">
-                          <widget class="QLabel" name="label_26">
-                           <property name="text">
-                            <string>Lookahead</string>
-                           </property>
-                          </widget>
-                         </item>
-                         <item row="0" column="3">
-                          <widget class="QDoubleSpinBox" name="_ToolPeakLook">
-                           <property name="toolTip">
-                            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Minimum distance between two peaks&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                           </property>
-                           <property name="decimals">
-                            <number>1</number>
-                           </property>
-                           <property name="value">
-                            <double>0.500000000000000</double>
-                           </property>
-                          </widget>
-                         </item>
-                         <item row="1" column="2">
-                          <widget class="QLabel" name="label_28">
-                           <property name="text">
-                            <string>Display</string>
-                           </property>
-                          </widget>
-                         </item>
-                         <item row="0" column="4">
-                          <widget class="QLabel" name="label_27">
-                           <property name="text">
-                            <string>seconds</string>
-                           </property>
-                          </widget>
-                         </item>
-                         <item row="1" column="3" colspan="2">
-                          <widget class="QComboBox" name="_ToolPeakMinMax">
-                           <property name="toolTip">
-                            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Search either for maximum / minimum / both&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                           </property>
-                           <item>
-                            <property name="text">
-                             <string>Max only</string>
-                            </property>
-                           </item>
-                           <item>
-                            <property name="text">
-                             <string>Min only</string>
-                            </property>
-                           </item>
-                           <item>
-                            <property name="text">
-                             <string>Min and Max</string>
-                            </property>
-                           </item>
-                          </widget>
+                         <item row="2" column="2">
+                          <layout class="QHBoxLayout" name="horizontalLayout"/>
                          </item>
                          <item row="0" column="5">
                           <spacer name="horizontalSpacer_38">
@@ -3531,7 +3478,7 @@ Twitches</string>
                            </property>
                           </spacer>
                          </item>
-                         <item row="0" column="0" rowspan="2">
+                         <item row="0" column="0" rowspan="3">
                           <widget class="QLabel" name="label_50">
                            <property name="font">
                             <font>
@@ -3543,7 +3490,7 @@ Twitches</string>
                            </property>
                           </widget>
                          </item>
-                         <item row="0" column="1" rowspan="2">
+                         <item row="0" column="1" rowspan="3">
                           <widget class="Line" name="line">
                            <property name="minimumSize">
                             <size>
@@ -3553,6 +3500,66 @@ Twitches</string>
                            </property>
                            <property name="orientation">
                             <enum>Qt::Vertical</enum>
+                           </property>
+                          </widget>
+                         </item>
+                         <item row="0" column="2">
+                          <widget class="QLabel" name="label_26">
+                           <property name="text">
+                            <string>Distance</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item row="0" column="3">
+                          <widget class="QDoubleSpinBox" name="_ToolPeakLook">
+                           <property name="toolTip">
+                            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Minimum distance between two peaks&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                           </property>
+                           <property name="decimals">
+                            <number>2</number>
+                           </property>
+                           <property name="minimum">
+                            <double>0.100000000000000</double>
+                           </property>
+                           <property name="singleStep">
+                            <double>0.100000000000000</double>
+                           </property>
+                           <property name="value">
+                            <double>0.500000000000000</double>
+                           </property>
+                          </widget>
+                         </item>
+                         <item row="0" column="4">
+                          <widget class="QLabel" name="label_27">
+                           <property name="text">
+                            <string>seconds</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item row="1" column="2">
+                          <widget class="QLabel" name="label_2">
+                           <property name="text">
+                            <string>Height</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item row="1" column="3">
+                          <widget class="QDoubleSpinBox" name="_ToolPeakHeight">
+                           <property name="minimum">
+                            <double>-500.000000000000000</double>
+                           </property>
+                           <property name="maximum">
+                            <double>500.000000000000000</double>
+                           </property>
+                           <property name="singleStep">
+                            <double>0.100000000000000</double>
+                           </property>
+                          </widget>
+                         </item>
+                         <item row="1" column="4">
+                          <widget class="QLabel" name="label_10">
+                           <property name="text">
+                            <string>uV</string>
                            </property>
                           </widget>
                          </item>
