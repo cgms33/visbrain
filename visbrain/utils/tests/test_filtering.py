@@ -3,7 +3,7 @@ import numpy as np
 import math
 
 from visbrain.utils.filtering import (filt, morlet, ndmorlet, morlet_power,
-                                      welch_power, PrepareData)
+                                      PrepareData)
 
 
 class TestFiltering(object):
@@ -44,13 +44,6 @@ class TestFiltering(object):
         f = [1., 2., 3., 4.]
         assert morlet_power(x, f, sf, norm=False).sum(0).max() > 1.
         assert math.isclose(morlet_power(x, f, sf, norm=True).sum(0).max(), 1.)
-
-    def test_welch_power(self):
-        """Test welch_power function."""
-        x, _, _ = self._get_data(True)
-        f = [5, 10., 15]
-        sf = 100.
-        assert math.isclose(welch_power(x, f, sf, norm=True).sum(0).max(), 1.)
 
     def test_prepare_data(self):
         """Test class PrepareData."""

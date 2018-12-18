@@ -3,10 +3,9 @@
 import numpy as np
 from mne.filter import filter_data
 from mne.time_frequency import morlet as _morlet_wlt
-from scipy.signal import welch, detrend
+from scipy.signal import detrend
 
-__all__ = ('filt', 'morlet', 'ndmorlet', 'morlet_power', 'welch_power',
-           'PrepareData')
+__all__ = ('filt', 'morlet', 'ndmorlet', 'morlet_power', 'PrepareData')
 
 #############################################################################
 # FILTERING
@@ -154,57 +153,6 @@ def morlet_power(x, freqs, sf, norm=True):
     if norm:
         sum_pow = xpow.sum(0).reshape(1, -1)
         np.divide(xpow, sum_pow, out=xpow)
-    return xpow
-
-
-def welch_power(x, freqs, sf, window_s=10, norm=True):
-    """Compute bandwise-normalized power of data using welch power.
-
-    Parameters
-    ----------
-    x : array_like
-        Row vector signal.
-    freqs : array_like
-        Frequency bands for power computation. The power will be computed
-        using successive frequency band (e.g freqs=(1., 2, .3)).
-    sf : float
-        Sampling frequency.
-    window_s : int | 10
-        Length of NFFT
-    norm : bool | True
-        If True, return bandwise normalized band power
-        (For each time point, the sum of power in the 4 band equals 1)
-
-    Returns
-    -------
-    xpow : array_like
-        The power in the specified frequency bands of shape
-        (len(freqs)-1, npts).
-    """
-    sf = int(sf)
-    freq_spacing = .1
-    n_epoch = max(1, int(len(x) / (window_s * sf)))
-
-    xpow = np.zeros((len(freqs) - 1, n_epoch), dtype=np.float)
-
-    for i in np.arange(0, len(x), window_s * sf):
-        f, pxx_spec = welch(x[int(i):int(i + window_s * sf)], sf,
-                            nperseg=sf * (1. / freq_spacing),
-                            scaling='spectrum')
-        epoch = int(i / (window_s * sf))
-
-        for num, k in enumerate(freqs[:-1]):
-            fmin = np.abs(f - k).argmin()
-            fmax = np.abs(f - freqs[num + 1]).argmin()
-            xpow[num, epoch] = np.mean(pxx_spec[fmin:fmax])
-
-    # Normalize by the band sum :
-    if norm:
-        sum_pow = xpow.sum(0).reshape(1, -1)
-        np.divide(xpow, sum_pow, out=xpow)
-
-    # Oversample
-    xpow = np.repeat(xpow, int(window_s * sf), axis=1)
     return xpow
 
 
