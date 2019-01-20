@@ -396,7 +396,7 @@ def mne_switch(file, ext, downsample, preload=True, **kwargs):
 
     # Check time
     meas = raw.info['meas_date']
-    meas = meas[0] if isinstance(meas, tuple) else meas
+    meas = meas[0] if isinstance(meas, (tuple, list)) else meas
     if meas is not None:
         start_time = datetime.datetime.utcfromtimestamp(meas).time()
     else:
