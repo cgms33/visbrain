@@ -51,11 +51,9 @@ class ReadSleepData(object):
             # Get if the file has to be loaded using Sleep or MNE python :
             use_mne = True if ext != '.eeg' else False
 
-            if use_mne:
-                is_mne_installed(raise_error=True)
-
             # ---------- LOAD THE FILE ----------
             if use_mne:  # Load using MNE functions
+                is_mne_installed(raise_error=True)
                 logger.debug("Loading file using MNE-python")
                 kwargs_mne['preload'] = True
                 args = mne_switch(file, ext, downsample, **kwargs_mne)
@@ -406,7 +404,7 @@ def mne_switch(file, ext, downsample, preload=True, **kwargs):
 
     anot = raw.annotations
 
-    return sf, downsample, dsf, data, chan, n, start_time, anot
+    return sf, downsample, data, chan, n, start_time, anot
 
 
 def get_sleep_stats(hypno_file, output_file=None):

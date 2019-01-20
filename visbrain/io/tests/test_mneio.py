@@ -1,7 +1,7 @@
 """Test functions in mneio.py."""
 import os
 
-from visbrain.io.mneio import mne_switch
+from visbrain.io.read_sleep import mne_switch
 from visbrain.io import download_file, path_to_visbrain_data
 
 
