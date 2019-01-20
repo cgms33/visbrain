@@ -390,9 +390,9 @@ def mne_switch(file, ext, downsample, preload=True, **kwargs):
     chan = raw.info['ch_names']
 
     # Conversion Volt (MNE) to microVolt (Visbrain):
-    if raw._raw_extras[0] is not None and 'units' in raw._raw_extras[0]:
-        units = raw._raw_extras[0]['units'][0:data.shape[0]]
-        data /= np.array(units).reshape(-1, 1)
+    # See https://martinos.org/mne/dev/manual/io.html
+    # Volts: eeg, eog, seeg, emg, ecg, bio, ecog
+    data *= 1e6
 
     # Check time
     meas = raw.info['meas_date']
