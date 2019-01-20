@@ -7,12 +7,16 @@ from visbrain.io import read_stc, clean_tmp
 
 
 NEEDED_FILES = dict(ANNOT_FILE_1='lh.aparc.annot',
-                    ANNOT_FILE_2='rh.PALS_B12_Brodmann.annot',
+                    ANNOT_FILE_2='rh.aparc.annot',
                     MEG_INVERSE='meg_source_estimate-lh.stc',
                     OVERLAY_1='lh.sig.nii.gz',
                     OVERLAY_2='lh.alt_sig.nii.gz',
                     PARCELLATES_1='lh.aparc.a2009s.annot',
-                    PARCELLATES_2='rh.aparc.annot'
+                    PARCELLATES_2='rh.aparc.annot',
+                    X3D_FILE='ferret.x3d',
+                    GII_FILE='lh.bert.inflated.gii',
+                    GII_OVERLAY='lh.bert.thickness.gii',
+                    OBJ_FILE='brain.obj'
                     )
 
 # BRAIN :
@@ -34,17 +38,6 @@ class TestBrainObj(_TestObjects):
 
     OBJ = b_obj
 
-    def _prepare_brain(self, name='inflated'):
-        b_obj.set_data(name)
-        b_obj.clean()
-
-    def test_get_template_list(self):
-        """Test function get_template_list."""
-        b_obj._get_template_path()
-        b_obj._get_default_templates()
-        b_obj._get_downloadable_templates()
-        b_obj._add_downloadable_templates('white')
-
     def test_rotation(self):
         """Test function rotation."""
         # Test fixed rotations :
@@ -64,6 +57,12 @@ class TestBrainObj(_TestObjects):
         for k, i in zip(['B1', 'B2', 'B3'], ['left', 'both', 'right']):
             b_obj.set_data(name=k, hemisphere=i)
 
+    def test_supported_format(self):
+        """Test for input formats."""
+        for k in ['X3D_FILE', 'GII_FILE', 'OBJ_FILE']:
+            file = self.need_file(NEEDED_FILES[k])
+            BrainObj(file)
+
     def test_custom_templates(self):
         """Test passing vertices, faces and normals."""
         BrainObj('Custom', vertices=vertices, faces=faces)
@@ -71,6 +70,8 @@ class TestBrainObj(_TestObjects):
 
     def test_get_parcellates(self):
         """Test function get_parcellates."""
+        # Prepare the brain :
+        b_obj = BrainObj('inflated')
         import pandas as pd
         file_1 = self.need_file(NEEDED_FILES['ANNOT_FILE_1'])
         file_2 = self.need_file(NEEDED_FILES['ANNOT_FILE_2'])
@@ -81,10 +82,10 @@ class TestBrainObj(_TestObjects):
     def test_overlay_from_file(self):
         """Test add_activation method."""
         # Prepare the brain :
-        self._prepare_brain()
+        b_obj = BrainObj('inflated')
         file_1 = self.need_file(NEEDED_FILES['OVERLAY_1'])
         file_2 = self.need_file(NEEDED_FILES['OVERLAY_2'])
-        # Overlay :
+        # NIFTI Overlay :
         b_obj.add_activation(file=file_1, clim=(4., 30.), hide_under=4,
                              cmap='Reds_r', hemisphere='left')
         b_obj.add_activation(file=file_2, clim=(4., 30.), hide_under=4,
@@ -96,9 +97,15 @@ class TestBrainObj(_TestObjects):
         b_obj.add_activation(data=data, vertices=vertices, smoothing_steps=3)
         b_obj.add_activation(data=data, vertices=vertices, smoothing_steps=5,
                              clim=(13., 22.), hide_under=13., cmap='plasma')
+        # GII overlays :
+        gii = self.need_file(NEEDED_FILES['GII_FILE'])
+        gii_overlay = self.need_file(NEEDED_FILES['GII_OVERLAY'])
+        b_gii = BrainObj(gii)
+        b_gii.add_activation(file=gii_overlay)
 
     def test_parcellize(self):
         """Test function parcellize."""
+        b_obj = BrainObj('inflated')
         file_1 = self.need_file(NEEDED_FILES['PARCELLATES_1'])
         file_2 = self.need_file(NEEDED_FILES['PARCELLATES_2'])
         b_obj.parcellize(file_1, hemisphere='left')
@@ -153,6 +160,5 @@ class TestBrainObj(_TestObjects):
 
     def test_remove(self):
         """Test function remove."""
-        b_cust = BrainObj('Custom')
-        b_cust.remove()
+        BrainObj('Custom').remove()
         clean_tmp()

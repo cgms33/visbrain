@@ -1,5 +1,5 @@
 """Base class for testing visbrain objects."""
-import pytest
+# import pytest
 import vispy
 
 from visbrain.tests._tests_visbrain import _TestVisbrain
@@ -26,6 +26,10 @@ class _TestObjects(_TestVisbrain):
             self.OBJ.visible_obj = k
             assert self.OBJ.visible_obj == k
 
+    def test_animate(self):
+        """Test animated method."""
+        self.OBJ.animate()
+
     def test_preview(self):
         """Test function preview."""
         self.OBJ.preview(show=False, axis=True, xyz=True, bgcolor='black')
@@ -45,12 +49,12 @@ class _TestObjects(_TestVisbrain):
     def test_describe_tree(self):
         assert isinstance(self.OBJ.describe_tree(), str)
 
-    @pytest.mark.xfail(reason="Failed if display not correctly configured",
-                       run=True, strict=False)
-    def test_screenshot(self):
-        """Test screenshot rendering."""
-        basename = self.to_tmp_dir(repr(self.OBJ))
-        self.OBJ.screenshot(basename + '.png')
+    # @pytest.mark.xfail(reason="Failed if display not correctly configured",
+    #                    run=True, strict=False)
+    # def test_screenshot(self):
+    #     """Test screenshot rendering."""
+    #     basename = self.to_tmp_dir(repr(self.OBJ))
+    #     self.OBJ.screenshot(basename + '.png')
 
     def test_parent(self):
         """Test setting parent."""

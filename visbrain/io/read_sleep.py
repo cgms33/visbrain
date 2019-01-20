@@ -10,17 +10,18 @@ from warnings import warn
 from scipy.stats import iqr
 from mne.filter import resample
 
-from .rw_utils import get_file_ext
-from .rw_hypno import (read_hypno, oversample_hypno)
-from .dialog import dialog_load
 from .dependencies import is_mne_installed
-from ..utils import vispy_array
-from ..io import merge_annotations
+from .dialog import dialog_load
+from .rw_hypno import (read_hypno, oversample_hypno)
+from .rw_utils import get_file_ext
+from .write_data import write_csv
 from ..config import PROFILER
+from ..io import merge_annotations
+from ..utils import vispy_array, sleepstats
 
 logger = logging.getLogger('visbrain')
 
-__all__ = ['ReadSleepData', 'read_elan', 'mne_switch']
+__all__ = ['ReadSleepData', 'read_elan', 'mne_switch', 'get_sleep_stats']
 
 
 class ReadSleepData(object):
@@ -33,6 +34,8 @@ class ReadSleepData(object):
         # Dialog window if data is None :
         if data is None:
             data = dialog_load(self, "Open dataset", '',
+                               "Any EEG files (*.vhdr *.edf *.gdf *.bdf *.eeg "
+                               "*.egi *.mff *.cnt *.trc *.set *.rec);;"
                                "BrainVision (*.vhdr);;EDF (*.edf);;"
                                "GDF (*.gdf);;BDF (*.bdf);;Elan (*.eeg);;"
                                "EGI (*.egi);;MFF (*.mff);;CNT (*.cnt);;"
@@ -177,7 +180,6 @@ class ReadSleepData(object):
                 hypno = np.zeros((npts,), dtype=np.float32)
 
         # ---------- SCALING ----------
-        # Check amplitude of the data and if necessary apply re-scaling
         # Assume that the inter-quartile amplitude of EEG data is ~50 uV
         iqr_chan = iqr(data[:, :int(data.shape[1] / 4)], axis=-1)
         bad_iqr = iqr_chan < 1.
@@ -387,7 +389,7 @@ def mne_switch(file, ext, downsample, preload=True, **kwargs):
     else:
         data = raw._data
 
-    channels = raw.info['ch_names']
+    chan = raw.info['ch_names']
 
     # Conversion Volt (MNE) to microVolt (Visbrain):
     if raw._raw_extras[0] is not None and 'units' in raw._raw_extras[0]:
@@ -404,4 +406,62 @@ def mne_switch(file, ext, downsample, preload=True, **kwargs):
 
     anot = raw.annotations
 
-    return sf, downsample, data, channels, n, start_time, anot
+    return sf, downsample, dsf, data, chan, n, start_time, anot
+
+
+def get_sleep_stats(hypno_file, output_file=None):
+    """Compute sleep statistics from hypnogram file and export them in csv.
+
+    Sleep statistics specifications:
+
+        * Time in Bed (TIB) : total duration of the hypnogram.
+        * Total Dark Time (TDT) : duration of the hypnogram from beginning
+          to last period of sleep.
+        * Sleep Period Time (SPT) : duration from first to last period of
+          sleep.
+        * Wake After Sleep Onset (WASO) : duration of wake periods within SPT
+        * Sleep Efficiency (SE) : TST / TDT * 100 (%).
+        * Total Sleep Time (TST) : SPT - WASO.
+        * W, N1, N2, N3 and REM: sleep stages duration.
+        * % (W, ... REM) : sleep stages duration expressed in percentages of
+          TDT.
+        * Latencies: latencies of sleep stages from the beginning of the
+          record.
+
+    (All values except SE and percentages are expressed in minutes)
+
+    Parameters
+    ----------
+    hypno_file : string
+        Full path to the hypnogram file.
+    output_file : string | None
+        Full path to the output file. If no file is provided, sleep statictics
+        are print out to the terminal.
+    """
+    # File conversion :
+    if output_file is not None:  # Check extension
+        ext = os.path.splitext(output_file)[1][1:].strip().lower()
+        if ext == '':
+            output_file = output_file + '.csv'
+
+    # Load hypnogram
+    hypno, sf_hyp = read_hypno(hypno_file)
+    if sf_hyp < 1:
+        mult = int(np.round(len(hypno) / sf_hyp))
+        hypno = oversample_hypno(hypno, mult)
+        sf_hyp = 1
+
+    # Get sleep stats
+    stats = sleepstats(hypno, sf_hyp=sf_hyp)
+    stats['File'] = hypno_file
+    print('\nSLEEP STATS\n===========')
+    keys, val = [''] * len(stats), [''] * len(stats)
+    # Fill table :
+    for num, (k, v) in enumerate(stats.items()):
+        print(k, '\t', str(v))
+        # Remember variables :
+        keys[int(num)] = k
+        val[int(num)] = str(v)
+    if output_file is not None:
+        write_csv(output_file, zip(keys, val))
+        print('===========\nCSV file saved to:', output_file)

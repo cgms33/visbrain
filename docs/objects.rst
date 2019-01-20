@@ -15,7 +15,7 @@ Checkout the list and API of available objects :py:mod:`visbrain.objects`.
 
 .. raw:: html
 
-    <img alt="_images/ex_combine_obj.png" src="_images/ex_combine_obj.png" align="center"></p>
+    <img alt="_static/object/ex_combine_obj.png" src="_static/object/ex_combine_obj.png" align="center"></p>
   </div>
 
 .. contents:: Contents
@@ -97,3 +97,9 @@ A scene can be imported from :class:`visbrain.objects` and defined as follow :
 
 
 This is a non-exhaustive example. You definitively should take a look at the :class:`visbrain.objects.SceneObj`
+
+
+Complete object tutorial
+------------------------
+
+For each object, we provide a `complete tutorial <http://visbrain.org/auto_examples/index.html#objects-examples>`_ with illustration of all functionalities.

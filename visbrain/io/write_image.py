@@ -7,12 +7,14 @@
 import os
 import logging
 import numpy as np
+
 from ..utils.color import color2vb
+from ..config import CONFIG
 
 logger = logging.getLogger('visbrain')
 
 __all__ = ('write_fig_hyp', 'write_fig_spindles', 'write_fig_canvas',
-           'write_fig_pyqt')
+           'write_fig_pyqt', 'mpl_preview')
 
 
 def write_fig_hyp(data, sf, file=None, start_s=0, grid=False, ascolor=False,
@@ -98,7 +100,8 @@ def write_fig_hyp(data, sf, file=None, start_s=0, grid=False, ascolor=False,
             idxm = np.where(hypno == q)[0] + 1
             idxm[idxm >= len(hypno)] = len(hypno) - 1
             mask[idxm] = False
-            plt.plot(np.ma.masked_array(hypno, mask=mask), i, linewidth=lw)
+            plt.plot(np.ma.masked_array(hypno, mask=mask), i, ls='steps',
+                     linewidth=lw)
 
     # Plot REM epochs
     remcol = 'k' if not ascolor else colors[4]
@@ -123,8 +126,8 @@ def write_fig_hyp(data, sf, file=None, start_s=0, grid=False, ascolor=False,
     if grid:
         plt.grid(True, 'major', ls=':', lw=.2, c='k', alpha=.3)
 
-    plt.tick_params(axis='both', which='both', bottom='on', top='off',
-                    labelbottom='on', left='on', right='off', labelleft='on',
+    plt.tick_params(axis='both', which='both', bottom=True, top=False,
+                    labelbottom=True, left=True, right=False, labelleft=True,
                     labelcolor='k', direction='out')
 
     # Invert Y axis and despine
@@ -392,6 +395,15 @@ def write_fig_canvas(filename, canvas, widget=None, autocrop=False,
         raise ValueError("Can not render the canvas. Try to decrease the "
                          "resolution")
 
+    # Set to the canvas it's previous size :
+    canvas._backend._physical_size = backup_size
+    canvas.size = backup_size
+    canvas.bgcolor = backup_bgcolor
+
+    # Matplotlib render :
+    if CONFIG['MPL_RENDER'] or not isinstance(filename, str):
+        return img
+
     # Remove alpha for files that are not png or tiff :
     if os.path.splitext(filename)[1] not in ['.png', '.tiff']:
         img = img[..., 0:-1]
@@ -404,11 +416,6 @@ def write_fig_canvas(filename, canvas, widget=None, autocrop=False,
     imsave(filename, img)
     px = tuple(img[:, :, 0].T.shape)
     logger.info("Image of size %rpx successfully saved (%s)" % (px, filename))
-
-    # Set to the canvas it's previous size :
-    canvas._backend._physical_size = backup_size
-    canvas.size = backup_size
-    canvas.bgcolor = backup_bgcolor
 
 
 def write_fig_pyqt(self, filename):
@@ -438,3 +445,19 @@ def write_fig_pyqt(self, filename):
         self.timerScreen.setSingleShot(True)
         self.timerScreen.timeout.connect(_take_screenshot)
         self.timerScreen.start(500)
+
+
+def mpl_preview(canvas, **kw):
+    """Preview canvas using Matplotlib."""
+    import matplotlib.pyplot as plt
+
+    img = write_fig_canvas(None, canvas, **kw)[..., 0:-1]
+
+    fig = plt.figure(figsize=(12, 8))
+    ax = plt.subplot(111)
+    ax.imshow(img, interpolation='bicubic')
+    ax.set_xticklabels(())
+    ax.set_yticklabels(())
+    plt.axis('off')
+    fig.tight_layout(pad=0., h_pad=0., w_pad=0.)
+    plt.show()

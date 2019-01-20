@@ -7,16 +7,15 @@ This file contain functions to load :
 - Text (*.txt)
 - CSV (*.csv)
 - JSON (*.json)
-- NIFTI
 """
 import numpy as np
-# import os
 
-from ..utils.transform import array_to_stt
 from .dependencies import is_nibabel_installed
 
-__all__ = ('read_mat', 'read_pickle', 'read_npy', 'read_npz',
-           'read_txt', 'read_csv', 'read_json', 'read_nifti', 'read_stc')
+
+__all__ = ('read_mat', 'read_pickle', 'read_npy', 'read_npz', 'read_txt',
+           'read_csv', 'read_json', 'read_stc', 'read_x3d', 'read_gii',
+           'read_obj')
 
 
 def read_mat(path, vars=None):
@@ -54,41 +53,6 @@ def read_csv(path):
 def read_json(path):
     """Read data from a JSON (json) file."""
     pass
-
-
-def read_nifti(path, hdr_as_array=False):
-    """Read data from a NIFTI file using Nibabel.
-
-    Parameters
-    ----------
-    path : string
-        Path to the nifti file.
-
-    Returns
-    -------
-    vol : array_like
-        The 3-D volume data.
-    header : Nifti1Header
-        Nifti header.
-    transform : VisPy.transform
-        The transformation
-    """
-    is_nibabel_installed(raise_error=True)
-    import nibabel as nib
-    # Load the file :
-    img = nib.load(path)
-    # Get the data and affine transformation ::
-    vol = img.get_data()
-    affine = img.affine
-    # Replace NaNs with 0. :
-    vol[np.isnan(vol)] = 0.
-    # Define the transformation :
-    if hdr_as_array:
-        transform = affine
-    else:
-        transform = array_to_stt(affine)
-
-    return vol, img.header, transform
 
 
 def read_stc(path):
@@ -149,3 +113,108 @@ def read_stc(path):
     # close the file
     fid.close()
     return stc
+
+
+def read_x3d(path):
+    """Read x3d files.
+
+    This code has been adapted from :
+    https://github.com/INCF/Scalable-Brain-Atlas
+
+    Parameters
+    ----------
+    path : string
+        Full path to a .x3d file.
+
+    Returns
+    -------
+    vertices : array_like
+        Array of vertices of shape (n_vertices, 3)
+    faces : array_like
+        Array of faces of shape (n_faces, 3)
+    """
+    from lxml import etree
+    import re
+
+    # Read root node :
+    tree = etree.parse(path, parser=etree.ETCompatXMLParser(huge_tree=True))
+    root_node = tree.getroot()
+
+    # Get mesh faces :
+    face_node = root_node.find('.//IndexedFaceSet')
+    faces = re.sub('[\s,]+', ',', face_node.attrib['coordIndex'].strip())
+    faces = re.sub(',-1,', '\n', faces)
+    faces = re.sub(',-1$', '', faces)
+    faces = np.array(faces.replace('\n', ',').split(',')).astype(int)
+    faces = faces.reshape(int(faces.shape[0] / 3), 3)
+
+    # Get mesh vertices :
+    vertex_node = face_node.find('Coordinate')
+    vertices = re.sub('[\s,]+', ' ', vertex_node.attrib['point'].strip())
+    vertices = np.array(vertices.split(' ')[0:-1]).astype(float)
+    vertices = vertices.reshape(int(vertices.shape[0] / 3), 3)
+
+    return vertices, faces
+
+
+def read_gii(path):
+    """Read GIFTI files.
+
+    Parameters
+    ----------
+    path : string
+        Full path to a .gii file.
+
+    Returns
+    -------
+    vertices : array_like
+        Array of vertices of shape (n_vertices, 3)
+    faces : array_like
+        Array of faces of shape (n_faces, 3)
+    """
+    is_nibabel_installed(raise_error=True)
+    import nibabel
+    arch = nibabel.load(path)
+    return arch.darrays[0].data, arch.darrays[1].data
+
+
+def read_obj(path):
+    """Read obj files.
+
+    Parameters
+    ----------
+    path : string
+        Full path to a .obj file.
+
+    Returns
+    -------
+    vertices : array_like
+        Array of vertices of shape (n_vertices, 3)
+    faces : array_like
+        Array of faces of shape (n_faces, 3)
+
+    Notes
+    -----
+    https://en.wikibooks.org/wiki/OpenGL_Programming/Modern_OpenGL_Tutorial_Load_OBJ
+    https://www.pygame.org/wiki/OBJFileLoader
+    """
+    vertices, faces = [], []
+    for line in open(path, "r"):
+        if line.startswith('#'): continue  # noqa
+        values = line.split()
+        if not values: continue  # noqa
+        if values[0] == 'v':
+            v = map(float, values[1:4])
+            vertices.append(list(v))
+        elif values[0] == 'f':
+            _face = []
+            for v in values[1:]:
+                w = v.split('/')
+                _face.append(int(w[0]))
+            faces.append([_face])
+
+    vertices = np.array(vertices)
+    faces = np.array(faces).squeeze() - 1
+    if faces.shape[-1] == 4:  # quad index -> triangles (0 as reference)
+        faces = np.r_[faces[:, [0, 1, 2]], faces[:, [0, 2, 3]]]
+    return vertices, faces

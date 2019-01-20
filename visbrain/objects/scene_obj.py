@@ -5,8 +5,8 @@ import logging
 import numpy as np
 from vispy import scene
 
-from ..io import write_fig_canvas
-from ..utils import color2vb, set_log_level, rotate_turntable
+from ..io import write_fig_canvas, mpl_preview, dialog_save
+from ..utils import color2vb, set_log_level, rotate_turntable, FixedCam
 from ..visuals import CbarVisual
 from ..config import CONFIG, PROFILER
 
@@ -349,13 +349,20 @@ class SceneObj(object):
         The default camera state to use.
     verbose : string
         Verbosity level.
+
+    Notes
+    -----
+    List of supported shortcuts :
+
+        * **s** : save the figure
+        * **delete** : reset all views
     """
 
     def __init__(self, bgcolor='black', camera_state={}, verbose=None,
                  **kwargs):
         """Init."""
         set_log_level(verbose)
-        logger.info("Scene creation")
+        logger.info("Creation of a scene")
         PROFILER('Scene creation')
         # Create the canvas and the grid :
         self.canvas = scene.SceneCanvas(keys='interactive', show=False,
@@ -412,18 +419,20 @@ class SceneObj(object):
             logger.debug("Object rescaled %s" % str([self._fix_gl] * 3))
             obj._scale = self._fix_gl
             sc = [self._fix_gl] * 3
+            tf = scene.transforms.STTransform(scale=sc)
         else:
-            sc = [1.] * 3
+            tf = obj._node.transform
         # Add transformation to the node :
         if hasattr(obj, '_node'):  # VisbrainObject
-            obj._node.transform = scene.transforms.STTransform(scale=sc)
+            obj._node.transform = tf
         elif hasattr(obj, '_cnode'):  # combineObjects
-            obj._cnode.transform = scene.transforms.STTransform(scale=sc)
+            obj._cnode.transform = tf
 
     def add_to_subplot(self, obj, row=0, col=0, row_span=1, col_span=1,
                        title=None, title_size=12., title_color='white',
                        title_bold=True, use_this_cam=False, rotate=None,
-                       camera_state={}, width_max=None, height_max=None):
+                       zoom=None, camera_state={}, width_max=None,
+                       height_max=None):
         """Add object to subplot.
 
         Parameters
@@ -451,8 +460,23 @@ class SceneObj(object):
             use the camera of an object as the reference, turn this parameter
             to True.
         rotate : string | None
-            Rotate the scene. Use 'top', 'bottom', 'left', 'right', 'front' or
-            'back'. Only available for 3-D objects.
+            Rotate the scene (only available for 3D objects). Use :
+
+                * 'top' : top view
+                * 'bottom' : bottom view
+                * 'left' : left view
+                * 'right' : right view
+                * 'front' : front view
+                * 'back' : bottom view
+                * 'side-fl' : side view (front-left)
+                * 'side-fr' : side view (front-right)
+                * 'side-bl' : side view (back-left)
+                * 'side-br' : side view (back-right)
+        zoom : float | None
+            Zoom level. If zoom is in ]0, 1[, the size of the object decrease.
+            If `zoom=1`, no zoom is applied. If zoom > 1., the size of the
+            object increase. For example, `zoom=2` means that the displayed
+            object will appear twice as large.
         camera_state : dict | {}
             Arguments to pass to the camera.
         width_max : float | None
@@ -473,7 +497,8 @@ class SceneObj(object):
             self._grid_desc[(row + 1, col + 1)] = len(self._grid.children)
             title_color = color2vb(title_color)
             tit = scene.visuals.Text(title, color=title_color, anchor_x='left',
-                                     bold=title_bold, font_size=title_size)
+                                     bold=title_bold, font_size=title_size,
+                                     anchor_y='bottom')
             sub.add_subvisual(tit)
         else:
             sub = self[(row, col)]
@@ -489,14 +514,27 @@ class SceneObj(object):
         sub.height_max = height_max
         sub.width_max = width_max
         sub.add(obj.parent)
+        # Zoom :
+        if isinstance(zoom, (int, float)):
+            assert zoom > 0, "`zoom` should be > 0"
+            if isinstance(sub.camera, scene.cameras.TurntableCamera):
+                sub.camera.scale_factor /= zoom
+            elif isinstance(sub.camera, scene.cameras.PanZoomCamera) or \
+                    isinstance(sub.camera, FixedCam):
+                r = sub.camera.rect
+                prop = np.array((r.width, r.height)) / zoom
+                left = r.center[0] - (prop[0] / 2.)
+                bottom = r.center[1] - (prop[1] / 2.)
+                sub.camera.rect = (left, bottom, prop[0], prop[1])
         # Camera :
         if camera_state == {}:
             camera_state = self._camera_state
         if isinstance(sub.camera, scene.cameras.TurntableCamera):
             rotate_turntable(fixed=rotate, camera_state=camera_state,
                              camera=sub.camera)
+        sub.camera.set_default_state()
         PROFILER('%s added to the scene' % repr(obj))
-        logger.info('%s added to the scene' % repr(obj))
+        logger.info('    %s added to the scene' % repr(obj))
 
     def link(self, *args):
         """Link the camera of several objects of the scene.
@@ -512,7 +550,7 @@ class SceneObj(object):
         >>> # Link cameras of subplots (0, 0), (0, 1) and (1, 0)
         >>> sc.link((0, 0), (0, 1), (1, 0))
         """
-        logger.info('Link cameras')
+        logger.info('    Link cameras')
         if args[0] == -1:
             args = [(k[0] - 1, k[1] - 1) for k in self._grid_desc.keys()]
         assert len(args) > 1
@@ -577,13 +615,81 @@ class SceneObj(object):
         write_fig_canvas(saveas, self.canvas,
                          widget=self.canvas.central_widget, **kwargs)
 
-    def preview(self):
-        """Previsualize the result."""
+    def record_animation(self, name, n_pic=10):
+        """Record an animated scene and save as a *.gif file.
+
+        Note that this method :
+
+            * Only 3D objects can be animated.
+            * Requires the python package imageio
+
+        Parameters
+        ----------
+        name : string
+            Name of the gif file (e.g 'myfile.gif')
+        n_pic : int | 10
+            Number of pictures to use to render the gif.
+        """
+        import imageio
         self._gl_uniform_transforms()
-        self.canvas.show(visible=True)
-        if PROFILER and logger.level == 1:
-            logger.profiler("PARENT TREE \n%s" % self._grid.describe_tree())
-            logger.profiler(" ")
-            PROFILER.finish()
-        if sys.flags.interactive != 1:
-            CONFIG['VISPY_APP'].run()
+        subplt = [(k[0] - 1, k[1] - 1) for k in self._grid_desc.keys()]
+        writer = imageio.get_writer(name)
+        for k in range(n_pic):
+            for obj in subplt:
+                if isinstance(self[obj].camera, scene.cameras.TurntableCamera):
+                    self[obj].camera.azimuth += 360. / n_pic
+            im = self.canvas.render()
+            writer.append_data(im)
+        writer.close()
+
+    def _scene_shortcuts(self):
+        """Add shortcuts to the scene."""
+        # On key pressed :
+        def key_pressed(event):  # noqa
+            if event.text == 's':
+                from PyQt5.QtWidgets import QWidget
+                ext = ['png', 'tiff', 'jpg']
+                _ext = ['%s file (*.%s)' % (k.upper(), k) for k in ext]
+                _ext += ['All files (*.*)']
+                saveas = dialog_save(QWidget(), name='Export the scene',
+                                     default='canvas.png', allext=_ext)
+                if saveas:
+                    write_fig_canvas(saveas, self.canvas,
+                                     widget=self.canvas.central_widget)
+        self.canvas.events.key_press.connect(key_pressed)
+
+    def render(self):
+        """Render the canvas.
+
+        Returns
+        -------
+        img : array_like
+            Array of shape (n_rows, n_columns, 4) where 4 describes the RGBA
+            components.
+        """
+        self._gl_uniform_transforms()
+        return self.canvas.render()
+
+    def preview(self, mpl=False):
+        """Previsualize the result.
+
+        Parameters
+        ----------
+        mpl : bool | False
+            Use Matplotlib to display the scene. This result in a non
+            interactive figure.
+        """
+        self._gl_uniform_transforms()
+        if CONFIG['MPL_RENDER']:
+            mpl_preview(self.canvas, widget=self.canvas.central_widget)
+        else:
+            self.canvas.show(visible=True)
+            # Shortcuts :
+            self._scene_shortcuts()
+            # Profiler :
+            if PROFILER and logger.level == 1:
+                logger.profiler("PARENT TREE\n%s" % self._grid.describe_tree())
+                logger.profiler(" ")
+                PROFILER.finish()
+            if sys.flags.interactive != 1 and CONFIG['SHOW_PYQT_APP']:
+                CONFIG['VISPY_APP'].run()

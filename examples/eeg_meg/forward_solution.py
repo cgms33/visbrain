@@ -4,7 +4,7 @@ Plot forward solution
 
 Plot source estimation.
 
-.. image:: ../../picture/piceegmeg/ex_eegmeg_mne_forward_solution.png
+.. image:: ../../_static/examples/ex_eegmeg_mne_forward_solution.png
 """
 import os
 
@@ -31,7 +31,7 @@ kw_b_obj = dict(translucent=False)
 # Additional inputs for SourceObj :
 kw_s_obj = dict(color='blue', symbol='square')
 # Additional inputs for activations (colormap, clim...) :
-kw_activation = dict(cmap='viridis', hide_under=0.3, clim=(0., .6))
+kw_activation = dict(cmap='Reds', hide_under=0., clim=(0., .6))
 
 """Show control :
 - True -> directly display the Brain interface

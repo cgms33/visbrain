@@ -47,7 +47,7 @@ And you should be ready to write your first python script. In your file explorer
 .. code-block:: python
 
     # Import only the Brain module from visbrain
-    from visbrain import Brain
+    from visbrain.gui import Brain
     # Open Brain :
     Brain().show()
 
@@ -112,7 +112,7 @@ Yes, we provide a set of functions to help you with the compatibility with MNE-P
 .. code-block:: python
 
     import visbrain                                   # import the full package
-    from visbrain import Brain, Sleep                 # import modules
+    from visbrain.gui import Brain, Sleep             # import modules
     from visbrain.objects import BrainObj, SourceObj  # import objects
 
 .. ----------------------------- JUPYTER -----------------------------
@@ -187,7 +187,7 @@ Checkout the :py:mod:`visbrain.objects` part of the API. Then, each object has a
     # Display the brain object :
     b_obj.preview()
 
-.. figure::  picture/pictuto/tuto_1.png
+.. figure::  _static/tuto/tuto_1.png
    :align:   center
 
 
@@ -238,7 +238,7 @@ Objects can be combined in a scene (see :class:`visbrain.objects.SceneObj`) to c
     sc.preview()
 
 
-.. figure::  picture/pictuto/tuto_2-1.png
+.. figure::  _static/tuto/tuto_2-1.png
    :align:   center
 
 
@@ -274,7 +274,7 @@ Objects can be combined in a scene (see :class:`visbrain.objects.SceneObj`) to c
     sc.preview()
 
 
-.. figure::  picture/pictuto/tuto_2-2.png
+.. figure::  _static/tuto/tuto_2-2.png
    :align:   center
 
 .. raw:: html
@@ -310,7 +310,7 @@ The :class:`visbrain.objects.BrainObj` comes with several brain templates (i.e B
 
 .. code-block:: python
 
-  from visbrain import Brain
+  from visbrain.gui import Brain
   from visbrain.objects import BrainObj
 
   vertices = ...  # the array of vertices
@@ -379,7 +379,7 @@ Two strategies :
 
 .. code-block:: python
 
-  from visbrain import Sleep
+  from visbrain.gui import Sleep
 
   data = ...        # NumPy array of shape (n_channels, n_time_points)
   channels = [...]  # List of channel names. Could be None

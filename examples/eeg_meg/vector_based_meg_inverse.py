@@ -8,21 +8,20 @@ See the original example :
 
 https://pysurfer.github.io/auto_examples/plot_vector_meg_inverse_solution.html#sphx-glr-auto-examples-plot-vector-meg-inverse-solution-py
 
-.. image:: ../../picture/piceegmeg/ex_eegmeg_vector_meg_inverse.png
+.. image:: ../../_static/examples/ex_eegmeg_vector_meg_inverse.png
 """
 import numpy as np
 
-from visbrain import Brain
+from visbrain.gui import Brain
 from visbrain.objects import BrainObj, VectorObj
-from visbrain.io import path_to_visbrain_data, read_stc, download_file
+from visbrain.io import read_stc, download_file
 
 """Download file if needed
 """
-file_name = 'meg_source_estimate-lh.stc'
-download_file(file_name)
+stc_file = download_file('meg_source_estimate-lh.stc', astype='example_data')
 
 # Read the *.stc file :
-file = read_stc(path_to_visbrain_data(file=file_name))
+file = read_stc(stc_file)
 
 # Get the data and vertices from the file :
 data = file['data'][:, 2]

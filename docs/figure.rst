@@ -3,7 +3,7 @@
 :py:class:`Figure`
 ##################
 
-.. figure::  picture/ico/figure_ico.png
+.. figure::  _static/ico/figure_ico.png
    :align:   center
 
 Description
@@ -14,7 +14,7 @@ This module can be used to arange several exported figures in a grid, to control
 
 .. code-block:: python
 
-    from visbrain import Figure
+    from visbrain.gui import Figure
 
 
 Example
@@ -23,7 +23,7 @@ Example
 .. code-block:: python
 
     # Import the Figure module :
-    from visbrain import Figure
+    from visbrain.gui import Figure
 
     # Set the list of files to load :
     files = ['front.png', 'top.png', 'connect.png', 'connect.png']
@@ -71,7 +71,7 @@ Example
     # Alternatively, you can show the figure :
     f.show()
 
-.. figure::  picture/picfigure/figure_example.png
+.. figure::  _static/figure/figure_example.png
    :align:   center
 
    Code above : four exported figures from the Brain module are aranged in a (2, 2) grid. Then, some have a colorbar, xlabel, ylabel. Finally, there is two shared colorbars.

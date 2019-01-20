@@ -92,7 +92,7 @@ class TimeSeries3DObj(VisbrainObject):
         assert isinstance(select, (list, np.ndarray))
         self._select = select
         # Amplitude / width :
-        assert isinstance(ts_amp, float) and isinstance(ts_width, float)
+        assert all([isinstance(k, (int, float)) for k in (ts_amp, ts_width)])
         self._ts_amp, self._ts_width = ts_amp, ts_width
         # Translate :
         assert len(translate) == 3
@@ -141,7 +141,9 @@ class TimeSeries3DObj(VisbrainObject):
         """Get the most adapted camera."""
         d_mean = self._xyz.mean(0)
         dist = np.sqrt(np.sum(d_mean ** 2))
-        return scene.cameras.TurntableCamera(center=d_mean, scale_factor=dist)
+        cam = scene.cameras.TurntableCamera(center=d_mean, scale_factor=dist)
+        self.camera = cam
+        return cam
 
     ###########################################################################
     ###########################################################################
