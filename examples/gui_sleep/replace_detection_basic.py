@@ -33,10 +33,10 @@ target_path = path_to_visbrain_data(folder='example_data')
 # Get data path :
 dfile = os.path.join(target_path, 'excerpt2.edf')            # data
 hfile = os.path.join(target_path, 'Hypnogram_excerpt2.txt')  # hypnogram
-cfile = os.path.join(target_path, 'excerpt2_config.txt')     # GUI config
+# cfile = os.path.join(target_path, 'excerpt2_config.txt')     # GUI config
 
 # Define an instance of Sleep :
-sp = Sleep(data=dfile, hypno=hfile, config_file=cfile)
+sp = Sleep(data=dfile, hypno=hfile, config_file=None)
 
 ###############################################################################
 # Define new methods
@@ -75,6 +75,7 @@ def fcn_rem(data, sf, time, hypno):  # noqa
     std_data = np.std(data)
     # Threshold is mean + 3 * STD
     return data > mean_data + 3. * std_data
+
 
 ###############################################################################
 # Replace existing methods

@@ -38,7 +38,3 @@ data, sf, chan = raw._data, raw.info['sfreq'], raw.info['ch_names']
 
 # Now, pass all the arguments to the Sleep module :
 Sleep(data=data, sf=sf, channels=chan, hypno=hfile).show()
-
-# Alternatively, these steps can be done automatically by using the 'use_mne'
-# input argument of sleep
-# Sleep(data=dfile, hypno=hfile, use_mne=True).show()

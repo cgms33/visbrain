@@ -40,10 +40,10 @@ target_path = path_to_visbrain_data(folder='example_data')
 # Get data path :
 dfile = os.path.join(target_path, 'excerpt2.edf')            # data
 hfile = os.path.join(target_path, 'Hypnogram_excerpt2.txt')  # hypnogram
-cfile = os.path.join(target_path, 'excerpt2_config.txt')     # GUI config
+# cfile = os.path.join(target_path, 'excerpt2_config.txt')     # GUI config
 
 # Define an instance of Sleep :
-sp = Sleep(data=dfile, hypno=hfile, config_file=cfile)
+sp = Sleep(data=dfile, hypno=hfile, config_file=None)
 
 ###############################################################################
 # Define new methods
@@ -70,6 +70,7 @@ def fcn_spindle(data, sf, time, hypno):  # noqa
     indices *= sf
     return indices.astype(int)
 
+
 ###############################################################################
 # Slow-waves function
 # ~~~~~~~~~~~~~~~~~~~
@@ -90,6 +91,7 @@ def fcn_slowwave(data, sf, time, hypno):  # noqa
         indices[i, 1] = k['end']
     indices *= sf
     return indices.astype(int)
+
 
 ###############################################################################
 # Replace existing methods
