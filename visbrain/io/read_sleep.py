@@ -35,11 +35,11 @@ class ReadSleepData(object):
         if data is None:
             data = dialog_load(self, "Open dataset", '',
                                "Any EEG files (*.vhdr *.edf *.gdf *.bdf *.eeg "
-                               "*.egi *.mff *.cnt *.trc *.set *.rec);;"
+                               "*.egi *.mff *.cnt *.trc *.set);;"
                                "BrainVision (*.vhdr);;EDF (*.edf);;"
                                "GDF (*.gdf);;BDF (*.bdf);;Elan (*.eeg);;"
                                "EGI (*.egi);;MFF (*.mff);;CNT (*.cnt);;"
-                               "EEGLab (*.set);;REC (*.rec);;Eximia (*.nxe)")
+                               "EEGLab (*.set);;Eximia (*.nxe)")
             upath = os.path.split(data)[0]
         else:
             upath = ''
