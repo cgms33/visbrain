@@ -179,12 +179,16 @@ class ReadSleepData(object):
         # ---------- SCALING ----------
         # Check amplitude of the data and if necessary apply re-scaling
         # Assume that the inter-quartile amplitude of EEG data is ~50 uV
-        iqr_data = iqr(data)
-        if iqr_data < 1:
-            mult_fact = np.floor(np.log10(50 / iqr_data))
-            warn("Wrong data amplitude. Multiplying data amplitude by 10^%i"
-                 % mult_fact)
-            data *= 10 ** mult_fact
+        iqr_chan = iqr(data[:, :int(data.shape[1] / 4)], axis=-1)
+        bad_iqr = iqr_chan < 1.
+
+        if np.any(bad_iqr):
+            mult_fact = np.zeros_like(iqr_chan)
+            iqr_chan[iqr_chan == 0.] = 1.
+            mult_fact[bad_iqr] = np.floor(np.log10(50. / iqr_chan[bad_iqr]))
+            data *= 10. ** mult_fact[..., np.newaxis]
+            warn("Wrong channel data amplitude. ")
+
         # ---------- CONVERSION ----------=
         # Convert data and hypno to be contiguous and float 32 (for vispy):
         self._data = vispy_array(data)
@@ -392,6 +396,7 @@ def mne_switch(file, ext, downsample, preload=True, **kwargs):
 
     # Check time
     meas = raw.info['meas_date']
+    meas = meas[0] if isinstance(meas, tuple) else meas
     if meas is not None:
         start_time = datetime.datetime.utcfromtimestamp(meas).time()
     else:
