@@ -186,7 +186,20 @@ class UiDetection(object):
             # Run detection :
             index = fcn(self._data[k, :], self._sf, self._time, self._hypno)
             nb = index.shape[0]
-            dty = nb / (len(self._time) / self._sf / 60.)
+
+            if method == 'REM' and self._ToolRemOnly.isChecked():
+                dty = nb / (np.where(self._hypno == 4)[0].size /
+                            self._sf / 60.)
+            elif method == 'Spindles' and self._ToolSpinRemOnly.isChecked():
+                nrem = np.where(np.logical_and(self._hypno > 0,
+                                               self._hypno < 4))[0].size
+                dty = nb / (nrem / self._sf / 60.)
+            elif method == 'Muscle twitches' and self._ToolMTOnly.isChecked():
+                dty = nb / (np.where(self._hypno == 4)[0].size /
+                            self._sf / 60.)
+            else:
+                dty = nb / (len(self._time) / self._sf / 60.)
+
             # dur = (index[:, 1] - index[:, 0]) * (1000. / self._sf)
 
             logger.info(("Perform %s detection on channel %s. %i events "

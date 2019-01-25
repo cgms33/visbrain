@@ -117,8 +117,8 @@ def kcdetect(data, sf, proba_thr, amp_thr, hypno, nrem_only, tmin, tmax,
     # Find true beginning / end using soft threshold
     for s in idx_start:
         d = s - idx_zc_soft
-        soft_beg = d[d > 0].min()
-        soft_end = np.abs(d[d < 0]).min()
+        soft_beg = d[d >= 0].min()
+        soft_end = np.abs(d[d <= 0]).min()
         idx_kc = np.append(idx_kc, np.arange(s - soft_beg, s + soft_end))
 
     # Check if spindles are present in range_spin_sec
@@ -290,9 +290,9 @@ def spindlesdetect(data, sf, threshold, hypno, nrem_only, fmin=12., fmax=14.,
         for s in idx_start:
             d = s - idx_zc_soft
             # Find distance to nearest soft threshold crossing before start
-            soft_beg = d[d > 0].min()
+            soft_beg = d[d >= 0].min()
             # Find distance to nearest soft threshold crossing after end
-            soft_end = np.abs(d[d < 0]).min()
+            soft_end = np.abs(d[d <= 0]).min()
             idx_spindles = np.append(idx_spindles, np.arange(
                                      s - soft_beg, s + soft_end))
 
@@ -422,9 +422,9 @@ def remdetect(data, sf, hypno, rem_only, threshold, tmin=300, tmax=800,
     for s in idx_start:
         d = s - idx_zc_soft
         # Find distance to nearest soft threshold crossing before start
-        soft_beg = d[d > 0].min()
+        soft_beg = d[d >= 0].min()
         # Find distance to nearest soft threshold crossing after end
-        soft_end = np.abs(d[d < 0]).min()
+        soft_end = np.abs(d[d <= 0]).min()
         idx_rem = np.append(idx_rem, np.arange(s - soft_beg, s + soft_end))
 
     # Fill gap between events separated by less than min_distance_ms
