@@ -35,11 +35,12 @@ class ReadSleepData(object):
         if data is None:
             data = dialog_load(self, "Open dataset", '',
                                "Any EEG files (*.vhdr *.edf *.gdf *.bdf *.eeg "
-                               "*.egi *.mff *.cnt *.trc *.set);;"
+                               "*.egi *.mff *.cnt *.trc *.set *.fif *.gz);;"
                                "BrainVision (*.vhdr);;EDF (*.edf);;"
                                "GDF (*.gdf);;BDF (*.bdf);;Elan (*.eeg);;"
                                "EGI (*.egi);;MFF (*.mff);;CNT (*.cnt);;"
-                               "EEGLab (*.set);;Eximia (*.nxe)")
+                               "EEGLab (*.set);;Eximia (*.nxe);;MNE (*.fif);;"
+                               "MNE compressed (*.fif.gz)")
             upath = os.path.split(data)[0]
         else:
             upath = ''
@@ -367,10 +368,13 @@ def mne_switch(file, ext, downsample, preload=True, **kwargs):
         raw = io.read_raw_brainvision(path, **kwargs)
     elif ext.lower() == '.nxe':  # Eximia
         raw = io.read_raw_eximia(path, **kwargs)
+    elif ext.lower() in ['.fif', '.gz']:  # Fieldtrip / MNE
+        raw = io.read_raw_fif(path, **kwargs)
     else:
         raise IOError("File not supported by mne-python.")
 
-    raw.pick_types(meg=True, eeg=True, ecg=True, emg=True)  # Remove stim lines
+    # Remove stim lines
+    raw.pick_types(meg=True, eeg=True, ecg=True, emg=True, eog=True)
     sf = raw.info['sfreq']
     n = raw._data.shape[1]
 
