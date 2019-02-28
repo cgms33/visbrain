@@ -108,6 +108,8 @@ class ReadSleepData(object):
                                 "CSV file (*.csv);;EDF+ file(*.edf);"
                                 ";All files (*.*)")
             hypno = None if hypno == '' else hypno
+        elif hypno is False:
+            hypno = None
         if isinstance(hypno, str):  # (*.hyp / *.txt / *.csv)
             hypno, _ = read_hypno(hypno, time=time, datafile=file)
             # Oversample hypno
