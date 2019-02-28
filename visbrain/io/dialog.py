@@ -40,7 +40,8 @@ def dialog_save(self, name='Save file', default='file',
     # By default, use the extension in the ruler :
     file = os.path.splitext(str(file))[0]
     ext = os.path.splitext(str(ext))[1][0:-1].lower()
-    return safety_save(file + ext)
+    # safety_save(file + ext)
+    return file + ext
 
 
 def dialog_load(self, name='Open file', default='file',

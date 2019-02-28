@@ -117,7 +117,7 @@ class ReadSleepData(object):
         # ========================== CHECKING ==========================
         # ---------- DATA ----------
         # Check data shape :
-        if data.ndim is not 2:
+        if data.ndim != 2:
             raise ValueError("The data must be a 2D array")
         nchan, npts = data.shape
 
@@ -391,9 +391,13 @@ def mne_switch(file, ext, downsample, preload=True, **kwargs):
     else:
         data = raw._data
 
+    # Scale from Volts to uV
+    data *= 1e6
+
+    # Extract channels
     chan = raw.info['ch_names']
 
-    # Check time
+    # Extract start time
     meas = raw.info['meas_date']
     meas = meas[0] if isinstance(meas, (tuple, list)) else meas
     if meas is not None:
