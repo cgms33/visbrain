@@ -53,8 +53,8 @@ install:
     - source activate testenv
     # Install dependencies :
     - if [ "${TEST}" == "standard" ] || [ "${TEST}" == "examples" ]; then
-        pip install codecov pytest pytest-cov pytest-sugar pytest-travis-fold openpyxl xlrd;
-        pip install mne nibabel pandas scikit-image imageio lxml;
+        pip install codecov pytest pytest-travis-fold openpyxl xlrd;
+        pip install mne pandas scikit-image imageio lxml;
         pip install git+https://github.com/hbldh/lspopt.git#egg=lspopt;
       fi;
     - if [ "${TEST}" == "flake" ]; then
@@ -77,7 +77,7 @@ before_script:
 
 script:
     - if [[ "${TEST}" == "standard" ]]; then
-          py.test --cov;
+          pytest;
       elif [[ "${TEST}" == "flake" ]]; then
           flake8;
       elif [[ "${TEST}" == "examples" ]]; then
