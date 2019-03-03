@@ -1,11 +1,9 @@
 """This script contains some other utility functions."""
 import numpy as np
-from vispy.visuals.transforms import (STTransform, ChainTransform,
-                                      MatrixTransform)
+from vispy.visuals.transforms import (STTransform, ChainTransform)
 
 
-__all__ = ('vprescale', 'vprecenter', 'vpnormalize', 'array_to_stt',
-           'stt_to_array')
+__all__ = ('vprescale', 'vprecenter', 'vpnormalize')
 
 
 def vprescale(obj, dist=1.):
@@ -76,46 +74,3 @@ def vpnormalize(obj, dist=1.):
     # Rescale :
     t.prepend(vprescale(obj, dist))
     return t
-
-
-def array_to_stt(arr):
-    """Turn a (4, 4) array into a scale and translate matrix transformation.
-
-    Parameters
-    ----------
-    arr : array_like
-        A (4, 4) array.
-
-    Returns
-    -------
-    transform : VisPy.transform
-        The VisPy transformation.
-    """
-    assert isinstance(arr, np.ndarray) and arr.shape == (4, 4)
-    _arr = arr.copy()
-    _arr[-1, 0:-1] = _arr[0:-1, -1]
-    _arr[0:-1, -1] = 0.
-    transform = MatrixTransform(_arr)
-    # transform.scale(np.diag(_arr)[0:-1])
-    # transform.translate(_arr[0:-1, -1])
-    return transform
-
-
-def stt_to_array(stt):
-    """Convert a MatrixTransform into a (4, 4) array.
-
-    Parameters
-    ----------
-    stt : MatrixTransform
-        The transformation.
-
-    Returns
-    -------
-    mat : array_like
-        The (4, 4) array.
-    """
-    assert isinstance(stt, MatrixTransform)
-    mat = stt.matrix.copy()
-    mat[0:-1, -1] = mat[-1, 0:-1]
-    mat[-1, 0:-1] = 0.
-    return mat

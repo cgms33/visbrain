@@ -9,9 +9,9 @@ from visbrain.config import PROFILER
 from visbrain.io.dependencies import is_lspopt_installed
 
 try:
-    _fromUtf8 = QtCore.QString.fromUtf8
+    _fromutf8 = QtCore.QString.fromUtf8
 except AttributeError:
-    def _fromUtf8(s):  # noqa
+    def _fromutf8(s):  # noqa
         """From utf8 pyqt function."""
         return s
 
@@ -33,7 +33,7 @@ class UiPanels(object):
         self._chanGrid = QtWidgets.QGridLayout()
         self._chanGrid.setContentsMargins(-1, -1, -1, 6)
         self._chanGrid.setSpacing(2)
-        self._chanGrid.setObjectName(_fromUtf8("_chanGrid"))
+        self._chanGrid.setObjectName(_fromutf8("_chanGrid"))
         self.gridLayout_21.addLayout(self._chanGrid, 0, 0, 1, 1)
         PROFILER("Channel grid", level=2)
 
@@ -181,16 +181,16 @@ class UiPanels(object):
         """Create a widget and a layout."""
         Widget = QtWidgets.QWidget(self.centralwidget)  # noqa
         Widget.setMinimumSize(QtCore.QSize(0, 0))
-        Widget.setObjectName(_fromUtf8(name_wiget))
+        Widget.setObjectName(_fromutf8(name_wiget))
         Widget.setVisible(visible)
         vlay = QtWidgets.QVBoxLayout(Widget)
         vlay.setContentsMargins(9, 0, 9, 0)
         vlay.setSpacing(0)
-        vlay.setObjectName(_fromUtf8("vlay"))
+        vlay.setObjectName(_fromutf8("vlay"))
         # Create layout :
         Layout = QtWidgets.QVBoxLayout()  # noqa
         Layout.setSpacing(0)
-        Layout.setObjectName(_fromUtf8(name_layout))
+        Layout.setObjectName(_fromutf8(name_layout))
         vlay.addLayout(Layout)
 
         return Widget, Layout
@@ -221,7 +221,7 @@ class UiPanels(object):
             # Add a checkbox to the scrolling panel :
             self._chanChecks[i] = QtWidgets.QCheckBox(self._PanScrollChan)
             # Name checkbox with channel name :
-            self._chanChecks[i].setObjectName(_fromUtf8("_CheckChan" + k))
+            self._chanChecks[i].setObjectName(_fromutf8("_CheckChan" + k))
             self._chanChecks[i].setText(k)
             self._chanChecks[i].setShortcut("Ctrl+" + str(i))
             # Add checkbox to the grid :
@@ -322,12 +322,12 @@ class UiPanels(object):
     def _fcn_chan_amplitude(self):
         """Change amplitude of each channel."""
         # Loop over spinbox and update camera rect :
-        for k, (m, M) in enumerate(zip(self._yminSpin, self._ymaxSpin)):
+        for k, (mi, ma) in enumerate(zip(self._yminSpin, self._ymaxSpin)):
             # Use either symetric / non-symetric amplitudes :
             if self._PanAmpSym.isChecked():
-                self._ylims[k, :] = np.array([-M.value(), M.value()])
+                self._ylims[k, :] = np.array([-ma.value(), ma.value()])
             else:
-                self._ylims[k, :] = np.array([m.value(), M.value()])
+                self._ylims[k, :] = np.array([mi.value(), ma.value()])
             rect = (self._chan.x[0], self._ylims[k, 0],
                     self._chan.x[1] - self._chan.x[0],
                     self._ylims[k, 1] - self._ylims[k, 0])
@@ -335,9 +335,9 @@ class UiPanels(object):
 
     def _fcn_all_amp(self):
         """Set all channel amplitudes."""
-        for k, (m, M) in enumerate(zip(self._yminSpin, self._ymaxSpin)):
-            m.setValue(self._PanAllAmpMin.value())
-            M.setValue(self._PanAllAmpMax.value())
+        for k, (mi, ma) in enumerate(zip(self._yminSpin, self._ymaxSpin)):
+            mi.setValue(self._PanAllAmpMin.value())
+            ma.setValue(self._PanAllAmpMax.value())
         self._fcn_chan_amplitude()
 
     def _fcn_update_amp_info(self):

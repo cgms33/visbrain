@@ -1,8 +1,7 @@
 """Test if dependencies are installed."""
 
 __all__ = ('is_mne_installed', 'is_opengl_installed',
-           'is_pandas_installed', 'is_lspopt_installed', 'is_xlrd_installed',
-           'is_sc_image_installed')
+           'is_pandas_installed', 'is_lspopt_installed', 'is_xlrd_installed')
 
 
 def _check_version(v_user, v_compare):
@@ -87,18 +86,4 @@ def is_xlrd_installed(raise_error=False):
     if raise_error and not is_installed:
         raise IOError("xlrd not installed. In a terminal, run : pip install "
                       "xlrd")
-    return is_installed
-
-
-def is_sc_image_installed(raise_error=False):
-    """Test if scikit-image is installed."""
-    try:
-        import skimage  # noqa
-        is_installed = True
-    except:
-        is_installed = False
-    # Raise error (if needed) :
-    if raise_error and not is_installed:
-        raise IOError("scikit-image not installed. In a terminal, run : pip"
-                      " install scikit-image")
     return is_installed

@@ -1,8 +1,7 @@
 """Test functions in transform.py."""
 import numpy as np
 
-from visbrain.utils.transform import (vprescale, vprecenter, vpnormalize,
-                                      array_to_stt, stt_to_array)
+from visbrain.utils.transform import (vprescale, vprecenter, vpnormalize)
 
 
 class TestTransform(object):
@@ -37,16 +36,3 @@ class TestTransform(object):
         tr = vpnormalize(mat, dist=dist)
         self._test_vpmean(mat, tr)
         self._test_vpdist(mat, tr, dist)
-
-    def test_array_to_stt(self):
-        """Test function array_to_stt."""
-        scale = (4., 5., 3.)
-        translate = (10., 25., 7.)
-        mat = np.array([[scale[0], 0., 0., translate[0]],
-                        [0., scale[1], 0., translate[1]],
-                        [0., 0., scale[2], translate[2]],
-                        [0., 0., 0., 1.]
-                        ])
-        tf = array_to_stt(mat)
-        _mat = stt_to_array(tf)
-        assert np.array_equal(mat, _mat)
