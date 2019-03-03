@@ -141,7 +141,7 @@ class ConnectObj(VisbrainObject):
         if isinstance(select, np.ndarray):
             assert select.shape == edges.shape and select.dtype == bool
             edges.mask = np.invert(select)
-        if color_by is not 'causal':
+        if color_by != 'causal':
             edges.mask[np.tril_indices(len(self), 0)] = True
         edges.mask[np.diag_indices(len(self))] = True
         self._edges = edges
@@ -359,7 +359,7 @@ class ConnectObj(VisbrainObject):
         nb_connect[:, 0] = np.arange(n_nodes)
         nb_connect[list(dict_ord.keys()), 1] = list(dict_ord.values())
         # Sort according to node index or number of connections per node :
-        idx = 0 if sort is 'index' else 1
+        idx = 0 if sort == 'index' else 1
         args = np.argsort(nb_connect[:, idx])
         # Ascending or descending sorting :
         if order == 'descending':

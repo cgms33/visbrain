@@ -6,8 +6,6 @@
 from PyQt5.QtWidgets import QFileDialog, QColorDialog
 import os
 
-from .rw_utils import safety_save
-
 __all__ = ['dialog_save', 'dialog_load', 'dialog_color']
 
 
@@ -40,7 +38,6 @@ def dialog_save(self, name='Save file', default='file',
     # By default, use the extension in the ruler :
     file = os.path.splitext(str(file))[0]
     ext = os.path.splitext(str(ext))[1][0:-1].lower()
-    # safety_save(file + ext)
     return file + ext
 
 
