@@ -13,8 +13,8 @@ from ..config import CONFIG
 
 logger = logging.getLogger('visbrain')
 
-__all__ = ('write_fig_hyp', 'write_fig_spindles', 'write_fig_canvas',
-           'write_fig_pyqt', 'mpl_preview')
+__all__ = ('write_fig_hyp', 'write_fig_canvas', 'write_fig_pyqt',
+           'mpl_preview')
 
 
 def write_fig_hyp(data, sf, file=None, start_s=0, grid=False, ascolor=False,
@@ -142,130 +142,6 @@ def write_fig_hyp(data, sf, file=None, start_s=0, grid=False, ascolor=False,
     ax.spines['bottom'].set_smart_bounds(True)
 
     # Save as 600 dpi .png
-    if isinstance(file, str):
-        plt.savefig(file, format='png', dpi=dpi, bbox_inches='tight')
-        logger.info('Image successfully saved (%s)' % file)
-        plt.close()
-    else:
-        plt.show()
-
-
-def write_fig_spindles(data, sf, hypno=None, file=None, start_s=0.,
-                       window_s=10., thr=3., nrem_only=False, dpi=300):
-    """Show steps of the spindles detection for a specific time window.
-
-    Parameters
-    ----------
-    data : array_like
-        Data vector
-    sf : float
-        The sampling frequency of displayed elements (could be the
-        down-sampling frequency)
-    hypno : array_like | None
-        Hypnogram vector
-    file : string | None
-        Output filename (with full path). If None, the plot is displayed.
-    start_s : float | 0.
-        Starting point in sec of the window to plot
-    window_s : float | 10.
-        Window duration in seconds
-    thresh : float | 3
-        Hard threshold for the spindles detection
-    dpi : int | 300
-        Dots per inches
-    """
-    import matplotlib.pyplot as plt
-    from ..utils.sleep import spindlesdetect
-    from ..utils.filtering import filt
-
-    # Define an empty hypno hypnogram if None :
-    hypno = np.zeros_like(data) if hypno is None else hypno
-
-    # Run spindles detection on the selected channel
-    (idx_spindles, _, _, dur, pwr, idx_start, idx_stop, hard_thr, soft_thr,
-     idx_sigma, fmin, fmax, sigma_nfpow, amplitude,
-     sigma_thr) = spindlesdetect(data, sf, thr, hypno, nrem_only,
-                                 return_full=True)
-
-    # Define plotting range
-    start_sf = int(start_s * sf)
-    x = range(start_sf, start_sf + int(window_s * sf))
-
-    # Bandpass filter of the window
-    elec_filt = filt(sf, [12., 14.], data[x], order=4)
-
-    # Find beginning and end of spindle within the window
-    idx_start_win = idx_start[(idx_start >= min(x)) & (idx_start <= max(x))]
-    idx_stop_win = idx_stop[(idx_stop >= min(x)) & (idx_stop <= max(x))]
-    sp_in_win = np.in1d(idx_start, idx_start_win)
-    sp_power = pwr[sp_in_win]
-    sp_duration = dur[sp_in_win]
-
-    # Find indices of spindles within the window
-    idx_spindles_win = idx_spindles[
-        (idx_spindles >= min(x)) & (idx_spindles <= max(x))]
-
-    # Find indices of sigma power > supra-threshold within window
-    idx_sigma_win = idx_sigma[(idx_sigma > min(x)) & (idx_sigma < max(x))]
-    # Find indices of wavelet amplitude > supra-threshold within window
-    with np.errstate(divide='ignore', invalid='ignore'):
-        idx_hard = np.where(amplitude > hard_thr)[0]
-
-    idx_hard_win = idx_hard[(idx_hard > min(x)) & (idx_hard < max(x))]
-
-    # Initialize Y vector
-    y_sigma, y_spindles, y_wlt, y_hard = np.empty(len(x)), np.empty(len(x)), \
-        np.empty(len(x)), np.empty(len(x))
-    y_sigma[:], y_spindles[:], y_wlt[:], y_hard[:] = np.nan, np.nan, np.nan, \
-        np.nan
-
-    # Fill Y vector
-    y_sigma[idx_sigma_win - start_sf] = sigma_nfpow[idx_sigma_win]
-    y_spindles[idx_spindles_win - start_sf] = data[idx_spindles_win]
-    y_wlt[idx_spindles_win - start_sf] = amplitude[idx_spindles_win]
-    y_hard[idx_hard_win - start_sf] = amplitude[idx_hard_win]
-
-    # Start plot
-    f, axarr = plt.subplots(4, figsize=(10, 6), sharex=True)
-    f.subplots_adjust(hspace=0.6)
-
-    # Plot original signal
-    axarr[0].plot(x, data[x], 'darkslategrey', lw=1.5)
-    axarr[0].plot(x, y_spindles, 'brown', lw=1.5)
-    axarr[0].set_title('Original signal (' + str(window_s) + ' sec)')
-    axarr[0].set_xlim([min(x), max(x)])
-
-    if sp_power.size >= 1:
-        text = 'power = ' + str(np.round(sp_power, 2)) + \
-            ' - duration = ' + str(sp_duration) + ' ms'
-        axarr[0].annotate(text, xy=(min(x), min(data[x])), fontsize=9,
-                          xycoords='data')
-
-    # Plot filtered signal
-    axarr[1].plot(x, elec_filt, 'darkslategrey', linewidth=1.5)
-    axarr[1].set_title('Filtered')
-
-    # Plot wavelet envelope
-    axarr[2].plot(x, amplitude[x], 'darkslategrey', linewidth=2)
-    axarr[2].plot(x, y_wlt, 'coral', lw=3)
-    # axarr[2].plot(x, y_hard, 'indianred', lw=3)
-    axarr[2].scatter(idx_start_win, amplitude[idx_start_win], 60, 'coral')
-    axarr[2].scatter(idx_stop_win, amplitude[idx_stop_win], 60, 'coral')
-    axarr[2].set_title('Wavelet')
-    axarr[2].axhline(y=hard_thr, color='grey', linestyle=':', lw=1.5)
-    axarr[2].axhline(y=soft_thr, color='grey', linestyle=':', lw=1.5)
-
-    # Plot sigma normalized power
-    axarr[3].plot(x, sigma_nfpow[x], 'darkslategrey', linewidth=2)
-    axarr[3].set_title('Sigma power')
-    axarr[3].plot(x, y_sigma, lw=3, color='lightcoral')
-    axarr[3].axhline(y=sigma_thr, color='grey', linestyle=':', lw=1.5)
-
-    # Despine
-    for ax in range(4):
-        axarr[ax].axis('off')
-
-    # Save as .png
     if isinstance(file, str):
         plt.savefig(file, format='png', dpi=dpi, bbox_inches='tight')
         logger.info('Image successfully saved (%s)' % file)

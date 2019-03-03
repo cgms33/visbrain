@@ -12,9 +12,9 @@ class TestFiltering(object):
     @staticmethod
     def _get_data(mean=False):
         if mean:
-            return np.random.rand(2000), 3., 512.
+            return np.random.rand(10000), 3., 256.
         else:
-            return np.random.rand(2000), [2., 4.], 512.
+            return np.random.rand(10000), [2., 4.], 256.
 
     def __iter__(self):
         """Iterate over filtering options."""

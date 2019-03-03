@@ -59,11 +59,10 @@ def hypno_time_to_sample(df, npts):
     # Drop lines that contains * :
     drop_rows = np.char.find(np.array(df['Stage']).astype(str), '*')
     df = df.iloc[drop_rows.astype(bool)]
-    df.is_copy = False  # avoid pandas warning
     # Replace text by numerical values :
     to_replace = ['Wake', 'N1', 'N2', 'N3', 'REM', 'Art']
     values = [0, 1, 2, 3, 4, -1]
-    df.replace(to_replace, values, inplace=True)
+    df = df.replace(to_replace, values)
     # Get stages and time index :
     stages = np.array(df['Stage']).astype(str)
     time_idx = np.array(df['Time']).astype(float)

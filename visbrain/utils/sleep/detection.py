@@ -166,6 +166,8 @@ def kcdetect(data, sf, proba_thr, amp_thr, hypno, nrem_only, tmin, tmax,
     # Remove events with bad duration
     good_dur = np.where(np.logical_and(duration_ms > tmin,
                                        duration_ms < tmax))[0]
+    if all(~good_dur):
+        return np.array([], dtype=int)
     idx_kc = _index_to_events(np.c_[idx_start, idx_stop][good_dur])
 
     # Remove events with bad amplitude
@@ -175,6 +177,9 @@ def kcdetect(data, sf, proba_thr, amp_thr, hypno, nrem_only, tmin, tmax,
         amp[i] = np.ptp(data[start:stop])
     good_amp = np.where(np.logical_and(amp > kc_min_amp,
                                        amp < kc_max_amp))[0]
+
+    if all(~good_amp):
+        return np.array([], dtype=int)
 
     return np.c_[idx_start, idx_stop][good_amp]
 
@@ -218,7 +223,7 @@ def spindlesdetect(data, sf, threshold, hypno, nrem_only, fmin=12., fmax=14.,
         If true, adapt sigma band limit by finding the peak sigma freq.
     return_full : bool | False
         If true, return more variables (start, stop, sigma, hard and soft
-        thresh) Used in function write_fig_spindles
+        thresh).
 
     Returns
     -------

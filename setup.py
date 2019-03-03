@@ -57,9 +57,9 @@ setup(
         "PyOpenGL"
     ],
     extras_require={
-        'full': ["mne", "tensorpac", "pandas", "xlrd", "scikit-image",
-                 "nibabel", "imageio"],
-        'sleep': ["mne", "tensorpac"],
+        'full': ["mne", "pandas", "xlrd", "scikit-image",
+                 "imageio"],
+        'sleep': ["mne"],
         'roi': ["pandas", "xlrd"],
         'topo': ["scikit-image"]
     },

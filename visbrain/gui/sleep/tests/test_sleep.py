@@ -76,12 +76,12 @@ class TestSleep(_TestVisbrain):
         """Test saving hypnogram data."""
         from PyQt5 import QtWidgets
         yes = QtWidgets.QMessageBox.Yes
-        no = QtWidgets.QMessageBox.No
         sp.saveHypData(filename=self.to_tmp_dir('hyp_data.txt'), reply=yes)
         sp.saveHypData(filename=self.to_tmp_dir('hyp_data.csv'), reply=yes)
         sp.saveHypData(filename=self.to_tmp_dir('hyp_data.xlsx'), reply=yes)
-        sp.saveHypData(filename=self.to_tmp_dir('hyp_data.txt'), reply=no)
-        sp.saveHypData(filename=self.to_tmp_dir('hyp_data.hyp'), reply=no)
+        # no = QtWidgets.QMessageBox.No
+        # sp.saveHypData(filename=self.to_tmp_dir('hyp_data.txt'), reply=no)
+        # sp.saveHypData(filename=self.to_tmp_dir('hyp_data.hyp'), reply=no)
 
     def test_save_hyp_figure(self):
         """Test saving hypnogram figure."""
@@ -125,7 +125,7 @@ class TestSleep(_TestVisbrain):
     def test_load_hypno(self):
         """Test loading hypno."""
         sp._load_hypno(filename=self.to_tmp_dir('hyp_data.txt'))
-        sp._load_hypno(filename=self.to_tmp_dir('hyp_data.hyp'))
+        # sp._load_hypno(filename=self.to_tmp_dir('hyp_data.hyp'))
 
     def test_load_all_detections(self):
         """Test loading all detections."""

@@ -1,9 +1,5 @@
 """Set of functions for picture managment."""
 import numpy as np
-from scipy.misc import imresize
-
-
-__all__ = ('piccrop', 'picresize')
 
 
 def piccrop(im, margin=10):
@@ -55,40 +51,3 @@ def piccrop(im, margin=10):
         sl_y = slice(None)
 
     return im[sl_y, sl_x, ...]
-
-
-def picresize(im, axis=0, extend=False):
-    """For a list of pictures, resize them all to the same size.
-
-    Inspect each picture in the list, get all shapes and use the smallest or
-    the largest picture as the reference for resizing all other pictures.
-
-    Parameters
-    ----------
-    im : list
-        List of np.ndarray of shapes (N, M) or (N, M, 3/4)
-    axis : int | 0
-        Specify which axis is considered as the reference. Use 0 and all
-        figures will have the same height otherwise use 1 for width.
-    extend : bool | False
-        Specify if the reference picture have to be the smallest
-        (False - downsize all pictures) or the largest
-        (True - extend all others).
-
-    Returns
-    -------
-    imr : list
-        List of resized pictures.
-    """
-    # ================= Checking =================
-    if not isinstance(im, list):
-        raise ValueError("im must be a list of pictures.")
-    if axis not in [0, 1]:
-        raise ValueError("axis parameter must either be 0 or 1.")
-
-    # ================= Shapes =================
-    sh = np.array([float(k.shape[axis]) for k in im])
-    factors = sh.max() / sh if extend else sh.min() / sh
-
-    # ================= Resize =================
-    return [imresize(k, i) for k, i in zip(im, factors)]

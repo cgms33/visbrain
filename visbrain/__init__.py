@@ -1,6 +1,6 @@
 """
-Hardware accelerated graphics for neuscientific data
-====================================================
+Hardware accelerated graphics for neuroscientific data
+======================================================
 
 visbrain is an open-source Python software mainly dedicated to the
 visualization of neuroscientific data. It's developped on top of VisPy which
@@ -14,7 +14,10 @@ Right now, visbrain contains five modules :
 * Figure : figure-layout for high-quality publication-like figures.
 * Topo : topographic representations
 
-See http://visbrain.org/ for a complete and step-by step documentation
+IMPORTANT: The current implementation is a lightweight version of Visbrain that
+only implements the Sleep module.
+
+See http://visbrain.org/sleep for a complete and step-by step documentation
 """
 import sys as _sys
 

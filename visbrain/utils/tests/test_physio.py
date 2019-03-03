@@ -2,8 +2,7 @@
 import numpy as np
 
 from visbrain.utils.physio import (find_non_eeg, rereferencing, bipolarization,
-                                   commonaverage, tal2mni, mni2tal,
-                                   generate_eeg)
+                                   commonaverage, generate_eeg)
 
 
 class TestPhysio(object):
@@ -47,16 +46,6 @@ class TestPhysio(object):
         data, channels, ignore = self._generate_eeg_dataset('eeg')
         data_r, chan_r, consider = commonaverage(data, channels, ignore)
         assert chan_r == ['Cz-m', 'Pz-m', 'Fz-m', 'EOG']
-
-    def test_tal2mni(self):
-        """Test function tal2mni."""
-        xyz = self._generate_coordinates()
-        tal2mni(xyz)
-
-    def test_mni2tal(self):
-        """Test function mni2tal."""
-        xyz = self._generate_coordinates()
-        mni2tal(xyz)
 
     def test_generate_eeg(self):
         """Test function generate_eeg."""

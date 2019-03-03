@@ -9,7 +9,7 @@ from scipy.stats import zscore
 from .sigproc import smoothing
 
 __all__ = ('find_non_eeg', 'rereferencing', 'bipolarization', 'commonaverage',
-           'tal2mni', 'mni2tal', 'generate_eeg')
+           'generate_eeg')
 
 logger = logging.getLogger('visbrain')
 
@@ -259,66 +259,6 @@ def _spm_matrix(p):
                   [0, 0, 1, 0],
                   [0, 0, 0, 1]])
     return np.linalg.multi_dot([t, r1, r2, r3, z, s])
-
-
-def tal2mni(xyz):
-    """Transform Talairach coordinates into MNI.
-
-    Parameters
-    ----------
-    xyz : array_like
-        Array of Talairach coordinates of shape (n_sources, 3)
-
-    Returns
-    -------
-    xyz_r : array_like
-        Array of MNI coordinates of shape (n_sources, 3)
-    """
-    # Check xyz to be (n_sources, 3) :
-    if (xyz.ndim != 2) or (xyz.shape[1] != 3):
-        raise ValueError("The shape of xyz must be (N, 3).")
-    n_sources = xyz.shape[0]
-
-    # Transformation matrices, different zooms above/below AC :
-    rotn = np.linalg.inv(_spm_matrix([0., 0., 0., .05]))
-    upz = np.linalg.inv(_spm_matrix([0., 0., 0., 0., 0., 0., .99, .97, .92]))
-    downz = np.linalg.inv(_spm_matrix([0., 0., 0., 0., 0., 0., .99, .97, .84]))
-
-    # Apply rotation and translation :
-    xyz = np.dot(rotn, np.c_[xyz, np.ones((n_sources, ))].T)
-    tmp = np.array(xyz)[2, :] < 0.
-    xyz[:, tmp] = np.dot(downz, xyz[:, tmp])
-    xyz[:, ~tmp] = np.dot(upz, xyz[:, ~tmp])
-    return np.array(xyz[0:3, :].T)
-
-
-def mni2tal(xyz):
-    """Transform MNI coordinates into Talairach.
-
-    Parameters
-    ----------
-    xyz : array_like
-        Array of MNI coordinates of shape (n_sources, 3)
-
-    Returns
-    -------
-    xyz_r : array_like
-        Array of Talairach coordinates of shape (n_sources, 3)
-    """
-    # Check xyz to be (n_sources, 3) :
-    if (xyz.ndim != 2) or (xyz.shape[1] != 3):
-        raise ValueError("The shape of xyz must be (N, 3).")
-    n_sources = xyz.shape[0]
-
-    # Transformation matrices, different zooms above/below AC :
-    up_t = _spm_matrix([0., 0., 0., .05, 0., 0., .99, .97, .92])
-    down_t = _spm_matrix([0., 0., 0., .05, 0., 0., .99, .97, .84])
-    xyz = np.c_[xyz, np.ones((n_sources, ))].T
-
-    tmp = np.array(xyz)[2, :] < 0.
-    xyz[:, tmp] = np.dot(down_t, xyz[:, tmp])
-    xyz[:, ~tmp] = np.dot(up_t, xyz[:, ~tmp])
-    return np.array(xyz[0:3, :].T)
 
 
 def generate_eeg(sf=512., n_pts=1000, n_channels=1, n_trials=1, n_sines=100,
