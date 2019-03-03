@@ -33,12 +33,14 @@ class Sleep(_PyQtModule, ReadSleepData, UiInit, Visuals, UiElements,
     ----------
     data : string, array_like | None
         Polysomnographic data. Must either be a path to a supported file (see
-        notes) or an array of raw data of shape (n_channels, n_pts). If None,
-        a dialog window to load the file should appear.
-    hypno : array_like | None
-        Hypnogram data. Should be a raw vector of shape (n_pts,)
+        notes), an array of raw data of shape (n_channels, n_pts) or a MNE
+        Python Raw object. If None, a dialog window to load the file should
+        appear.
+    hypno : array_like | None | False
+        Hypnogram data. Should be a raw vector of shape (n_pts,). If None, a
+        dialog window will appear. If False, the hypnogram will be ignored.
     config_file : string | None
-        Path to the configuration file (.txt)
+        Path to the configuration file (.json)
     annotations : string | None
         Path to the annotation file (.txt, .csv). Alternatively, you can pass
         an annotation instance of MNE or simply an (N,) array describing
@@ -49,6 +51,7 @@ class Sleep(_PyQtModule, ReadSleepData, UiInit, Visuals, UiElements,
         The sampling frequency of raw data.
     downsample : float | 100.
         The downsampling frequency for the data and hypnogram raw data.
+        Default is 100 Hz.
     axis : bool | False
         Specify if each axis have to contains its own axis. Be carefull
         with this option, the rendering can be much slower.

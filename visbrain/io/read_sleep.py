@@ -5,6 +5,7 @@ This file contain functions to load PSG and hypnogram files.
 import os
 import logging
 import datetime
+from mne import io
 import numpy as np
 from warnings import warn
 from scipy.stats import iqr
@@ -84,10 +85,28 @@ class ReadSleepData(object):
             n = data.shape[1]
             dsf = downsample / sf if downsample is not None else 1
             data = resample(data, dsf)
+
+        elif isinstance(data, io.BaseRaw):  # MNE-Python BaseRaw object
+            args = mne_switch(None, None, downsample, raw=data)
+            file = None
+            # Get output arguments :
+            (sf, downsample, data, channels, n, offset, annot) = args
+            info = ("Data successfully loaded:"
+                    "\n- Sampling-frequency : %.2fHz"
+                    "\n- Number of time points (before down-sampling): %i"
+                    "\n- Down-sampling frequency : %.2fHz"
+                    "\n- Number of time points (after down-sampling): %i"
+                    "\n- Number of channels : %i"
+                    )
+            n_channels, n_pts_after = data.shape
+            logger.info(info % (sf, n, downsample, n_pts_after, n_channels))
+            PROFILER("Data file loaded", level=1)
+
         else:
             raise IOError("The data should either be a string which refer to "
-                          "the path of a file or an array of raw data of shape"
-                          " (n_electrodes, n_time_points).")
+                          "the path of a file, an array of raw data of shape"
+                          " (n_electrodes, n_time_points), or a MNE Python "
+                          "raw object.")
 
         # Keep variables :
         self._file = file
@@ -319,7 +338,7 @@ def read_elan(path, downsample):
     return sf, downsample, data, chan, n, start_time, None
 
 
-def mne_switch(file, ext, downsample, preload=True, **kwargs):
+def mne_switch(file, ext, downsample, preload=True, raw=None, **kwargs):
     """Read sleep datasets using mne.io.
 
     Parameters
@@ -330,6 +349,8 @@ def mne_switch(file, ext, downsample, preload=True, **kwargs):
         File extension (e.g. '.edf'').
     preload : bool | True
         Preload data in memory.
+    raw : mne.io.BaseRaw object
+        Raw data object.
     kwargs : dict | {}
         Further arguments to pass to the mne.io.read function.
 
@@ -348,32 +369,35 @@ def mne_switch(file, ext, downsample, preload=True, **kwargs):
     start_time : datetime.time
         The time offset.
     """
-    from mne import io
+    if raw is None:
+        # Get full path :
+        path = file + ext
 
-    # Get full path :
-    path = file + ext
+        # Preload :
+        if preload is False:
+            preload = 'temp.dat'
+        kwargs['preload'] = preload
 
-    # Preload :
-    if preload is False:
-        preload = 'temp.dat'
-    kwargs['preload'] = preload
+        if ext.lower() in ['.edf', '.bdf', '.gdf']:  # EDF / BDF / GDF
+            raw = io.read_raw_edf(path, **kwargs)
+        elif ext.lower == '.set':   # EEGLAB
+            raw = io.read_raw_eeglab(path, **kwargs)
+        elif ext.lower() in ['.egi', '.mff']:  # EGI / MFF
+            raw = io.read_raw_egi(path, **kwargs)
+        elif ext.lower() == '.cnt':  # CNT
+            raw = io.read_raw_cnt(path, **kwargs)
+        elif ext.lower() == '.vhdr':  # BrainVision
+            raw = io.read_raw_brainvision(path, **kwargs)
+        elif ext.lower() == '.nxe':  # Eximia
+            raw = io.read_raw_eximia(path, **kwargs)
+        elif ext.lower() in ['.fif', '.gz']:  # Fieldtrip / MNE
+            raw = io.read_raw_fif(path, **kwargs)
+        else:
+            raise IOError("File not supported by mne-python.")
 
-    if ext.lower() in ['.edf', '.bdf', '.gdf']:  # EDF / BDF / GDF
-        raw = io.read_raw_edf(path, **kwargs)
-    elif ext.lower == '.set':   # EEGLAB
-        raw = io.read_raw_eeglab(path, **kwargs)
-    elif ext.lower() in ['.egi', '.mff']:  # EGI / MFF
-        raw = io.read_raw_egi(path, **kwargs)
-    elif ext.lower() == '.cnt':  # CNT
-        raw = io.read_raw_cnt(path, **kwargs)
-    elif ext.lower() == '.vhdr':  # BrainVision
-        raw = io.read_raw_brainvision(path, **kwargs)
-    elif ext.lower() == '.nxe':  # Eximia
-        raw = io.read_raw_eximia(path, **kwargs)
-    elif ext.lower() in ['.fif', '.gz']:  # Fieldtrip / MNE
-        raw = io.read_raw_fif(path, **kwargs)
     else:
-        raise IOError("File not supported by mne-python.")
+        # Make sure that data are loaded
+        raw.load_data()
 
     # Remove stim lines
     raw.pick_types(meg=True, eeg=True, ecg=True, emg=True, eog=True)
