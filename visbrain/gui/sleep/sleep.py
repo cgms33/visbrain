@@ -118,7 +118,7 @@ class Sleep(_PyQtModule, ReadSleepData, UiInit, Visuals, UiElements,
                 self._hypcolor[k] = hypc[self._hconvinv[k]]
         self._indicol = '#e74c3c'
         # Default spectrogram colormap :
-        self._defcmap = 'viridis'
+        self._defcmap = 'Spectral'
         # Spindles / REM / Peaks colors :
         self._defspin = color2vb('#d73737')
         self._defsw = color2vb('#56bf8b')

@@ -103,7 +103,7 @@
            <enum>QTabWidget::Rounded</enum>
           </property>
           <property name="currentIndex">
-           <number>4</number>
+           <number>0</number>
           </property>
           <property name="movable">
            <bool>true</bool>
@@ -702,6 +702,9 @@ channel</string>
                       <property name="text">
                        <string>Reversed</string>
                       </property>
+                      <property name="checked">
+                       <bool>false</bool>
+                      </property>
                      </widget>
                     </item>
                     <item row="1" column="0">
@@ -729,7 +732,7 @@ channel</string>
                        <double>0.100000000000000</double>
                       </property>
                       <property name="value">
-                       <double>0.500000000000000</double>
+                       <double>0.400000000000000</double>
                       </property>
                      </widget>
                     </item>

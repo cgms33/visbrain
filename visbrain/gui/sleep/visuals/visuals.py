@@ -432,8 +432,8 @@ class Spectrogram(PrepareData):
         self.mesh.transform = vist.STTransform()
 
     def set_data(self, sf, data, time, method='Fourier transform',
-                 cmap='rainbow', nfft=30., overlap=0., fstart=.5, fend=20.,
-                 contrast=.5):
+                 cmap='Spectral', nfft=30., overlap=0., fstart=.5, fend=20.,
+                 contrast=.4):
         """Set data to the spectrogram.
 
         Use this method to change data, colormap, spectrogram settings, the
@@ -449,7 +449,7 @@ class Spectrogram(PrepareData):
             The time vector.
         method: string | 'Fourier transform'
             Computation method.
-        cmap : string | 'viridis'
+        cmap : string | 'Spectral'
             The matplotlib colormap to use.
         nfft : float | 30.
             Number of fft points for the spectrogram (in seconds).
