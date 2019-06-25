@@ -54,8 +54,7 @@ install:
     # Install dependencies :
     - if [ "${TEST}" == "standard" ] || [ "${TEST}" == "examples" ]; then
         pip install codecov pytest pytest-travis-fold openpyxl xlrd;
-        pip install mne pandas scikit-image imageio lxml;
-        pip install git+https://github.com/hbldh/lspopt.git#egg=lspopt;
+        pip install mne pandas scikit-image imageio lxml lspopt;
       fi;
     - if [ "${TEST}" == "flake" ]; then
         pip install flake8 pep8-naming;

@@ -1,28 +1,19 @@
 .. -*- mode: rst -*-
 
-.. image:: https://travis-ci.org/EtienneCmb/visbrain.svg?branch=master
-    :target: https://travis-ci.org/EtienneCmb/visbrain
-
-.. image:: https://ci.appveyor.com/api/projects/status/fdxhhmpagms1so8l/branch/master?svg=true
-    :target: https://ci.appveyor.com/project/EtienneCmb/visbrain/branch/master
-
-.. image:: https://circleci.com/gh/EtienneCmb/visbrain/tree/master.svg?style=svg
-    :target: https://circleci.com/gh/EtienneCmb/visbrain/tree/master
-
-.. image:: https://codecov.io/gh/EtienneCmb/visbrain/branch/master/graph/badge.svg
-  :target: https://codecov.io/gh/EtienneCmb/visbrain
-
-.. image:: https://badge.fury.io/py/visbrain.svg
-  :target: https://badge.fury.io/py/visbrain
-
 Visbrain
 ########
 
 .. figure::  https://github.com/EtienneCmb/visbrain/blob/master/docs/_static/ico/visbrain.png
    :align:   center
 
-
 **Visbrain** is an open-source python 3 package dedicated to brain signals visualization. It is based on top of `VisPy <http://vispy.org/>`_ and PyQt and is distributed under the 3-Clause BSD license. We also provide an on line `documentation <http://visbrain.org>`_, `examples and datasets <http://visbrain.org/auto_examples/>`_ and can also be downloaded from `PyPi <https://pypi.python.org/pypi/visbrain/>`_.
+
+**Important**: This fork is a *lightweight* release of the Sleep module of Visbrain. Therefore, this fork only contains the source code for the Sleep module. There are also some notable differences between this fork and the main release of Visbrain:
+
+1. The downsampling / filtering default methods are based on MNE
+2. The default format for hypnogram export is in point-per-second.
+3. This version works directly with MNE raw objects.
+4. The lspopt dependency (multitaper spectrogram) is directly installed using pip.
 
 Important links
 ===============
@@ -49,6 +40,7 @@ Visbrain requires :
 * PyQt5
 * Pillow
 * PyOpenGL
+* lspopt
 
 User installation
 -----------------
@@ -57,5 +49,4 @@ Install Visbrain :
 
 .. code-block:: shell
 
-    pip install -U visbrain
-
+    pip install -e git+https://github.com/raphaelvallat/visbrain.git

@@ -54,12 +54,13 @@ setup(
         "pandas>=0.22",
         "pyqt5",
         "pillow",
+        "lspopt",
         "PyOpenGL"
     ],
     extras_require={
-        'full': ["mne", "pandas", "xlrd", "scikit-image",
+        'full': ["mne", "lspopt", "pandas", "xlrd", "scikit-image",
                  "imageio"],
-        'sleep': ["mne"],
+        'sleep': ["mne", "lspopt"],
         'roi': ["pandas", "xlrd"],
         'topo': ["scikit-image"]
     },
