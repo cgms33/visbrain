@@ -1,7 +1,7 @@
 """Set of functions for path definitions."""
 import logging
 import os
-import sys
+from pkg_resources import resource_filename
 
 logger = logging.getLogger('visbrain')
 
@@ -38,9 +38,8 @@ def path_to_visbrain_data(file=None, folder=None):
 
 def get_data_url_path():
     """Get the path to the data_url JSON file."""
-    path_file = str(sys.modules[__name__].__file__)
-    url_path = os.path.dirname(os.path.dirname(path_file))
-    return os.path.join(url_path, 'data_url.json')
+    data_url_filepath = resource_filename('visbrain', 'data_url.json')
+    return data_url_filepath
 
 
 def get_files_in_folders(*args, with_ext=False, with_path=False, file=None,

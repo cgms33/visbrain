@@ -10,9 +10,23 @@ Changelog
 0.4.5
 -----
 
+New features
+~~~~~~~~~~~~
+
+* Sulcus array support (`PR44 <https://github.com/EtienneCmb/visbrain/pull/44>`_)
+* :class:`visbrain.objects.BrainObj` natively support Freesurfer files
+
 Improvements
 ~~~~~~~~~~~~
+
 * Protect Sleep from MemoryError for large sleep files (`PR37 <https://github.com/EtienneCmb/visbrain/pull/37>`_)
+* Improve spectrogram in case of non finite values (`PR39 <https://github.com/EtienneCmb/visbrain/pull/39>`_)
+* Fix path to the url file for pyenv (`PR41 <https://github.com/EtienneCmb/visbrain/pull/41>`_)
+
+Bug fixes
+~~~~~~~~~
+* Fix `allow_pickle`
+* Fix imresize from the scipy package
 
 0.4.4
 -----
