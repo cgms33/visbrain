@@ -847,6 +847,8 @@ class CanvasShortcuts(object):
                    ('CTRL + q', 'Close Sleep graphical interface'),
                    ]
 
+        annotation_cursors = []
+
         # Add shortcuts to vbCanvas :
         @canvas.events.key_press.connect
         def on_key_press(event):
@@ -937,29 +939,6 @@ class CanvasShortcuts(object):
                 # Build transformation :
                 self._chan.node[idx].transform = vist.NullTransform()
 
-        @canvas.events.mouse_double_click.connect
-        def on_mouse_double_click(event):
-            """Executed function when double click mouse over canvas.
-
-            :event: the trigger event
-            """
-            # Get canvas title :
-            is_sp_hyp = canvas.title in ['Hypnogram', 'Spectrogram']
-            title = canvas.title if is_sp_hyp else canvas.title.split('_')[1]
-            # Annotate the timing :
-            if is_sp_hyp:
-                cursor = self._time[-1] * event.pos[0] / canvas.size[0]
-            else:
-                val = self._SlVal.value()
-                step = self._SigSlStep.value()
-                win = self._SigWin.value()
-                tm, th = (val * step, val * step + win)
-                cursor = tm + ((th - tm) * event.pos[0] / canvas.size[0])
-            # Set the current tab to the annotation tab :
-            self.QuickSettings.setCurrentIndex(5)
-            # Run annotation :
-            self._fcn_annotate_add('', (cursor, cursor), title)
-
         @canvas.events.mouse_move.connect
         def on_mouse_move(event):
             """Executed function when the mouse move over canvas.
@@ -1018,6 +997,33 @@ class CanvasShortcuts(object):
         @canvas.events.mouse_wheel.connect
         def on_mouse_wheel(event):
             pass
+        
+        def position():
+            val = self._SlVal.value()
+            step = self._SigSlStep.value()
+            win = self._SigWin.value()
+            tm, th = (val * step, val * step + win)
+            return tm, th
+        
+        @canvas.events.mouse_press.connect
+        @canvas.events.mouse_release.connect
+        def test2(event):
+            is_right = self._is_right_click(event)
+            if is_right:
+                tm, th = position()
+                cursor = tm + ((th - tm) * event.pos[0] / canvas.size[0])
+                annotation_cursors.append(cursor)
+                # Get canvas title :
+                is_sp_hyp = canvas.title in ['Hypnogram', 'Spectrogram']
+                title = canvas.title if is_sp_hyp else canvas.title.split('_')[1]
+                # Set the current tab to the annotation tab :
+                self.QuickSettings.setCurrentIndex(5)
+                # Run annotation :
+                if len(annotation_cursors) > 1 and len(annotation_cursors)%2 == 0:
+                    annot_list = annotation_cursors[-2:]
+                    cursor0 = min(annot_list)
+                    cursor1 = max(annot_list)
+                    self._fcn_annotate_add('', (cursor0, cursor1), title)
 
 
 class Visuals(CanvasShortcuts):

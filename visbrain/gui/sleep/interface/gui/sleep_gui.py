@@ -13,7 +13,7 @@ class Ui_MainWindow(object):
         MainWindow.setObjectName("MainWindow")
         MainWindow.setWindowModality(QtCore.Qt.NonModal)
         MainWindow.setEnabled(True)
-        MainWindow.resize(1359, 1116)
+        # MainWindow.resize(1359, 1116)
         font = QtGui.QFont()
         font.setKerning(True)
         font.setStyleStrategy(QtGui.QFont.PreferDefault)

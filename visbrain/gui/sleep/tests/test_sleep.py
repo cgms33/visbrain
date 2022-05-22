@@ -213,10 +213,10 @@ class TestSleep(_TestVisbrain):
         self._mouse_event(sp._chanCanvas[0].canvas, etype='mouse_press',
                           pos=(50, 100), modifiers=[Key('Control')], button=1)
 
-    def test_mouse_double_click(self):
+    def test_mouse_click(self):
         """Test mouse double click."""
         for k in [sp._chanCanvas[0], sp._specCanvas, sp._hypCanvas]:
-            self._mouse_event(k.canvas, etype='mouse_double_click',
+            self._mouse_event(k.canvas, etype='mouse_click',
                               pos=(50, 100))
 
     def test_mouse_release(self):

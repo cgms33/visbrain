@@ -222,6 +222,10 @@ class MouseEventControl(object):
         """Return if the pressed button is the left one."""
         return event.button == 1
 
+    def _is_right_click(self, event):
+        """Return if the pressed button is the right one."""
+        return event.button == 2
+
     def _is_modifier(self, event, modifier):
         """Return the name of the modifier use."""
         try:
